@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pixel Farming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="logo">Compilation of data on the Tap Ma River basin, Rayong Province.</div>
+</header>
+
+<div class="app">
+
+  <div class="hex-hub">
+    <svg viewBox="0 0 300 300">
+<defs>
+<pattern id="rainRadarPattern" patternUnits="userSpaceOnUse" width="300" height="300">
+  <image href="pexels-ray-strassburger-2735117-13866733.jpg" x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+</pattern>
+
+ <pattern id="rainfallVolumePattern" patternUnits="userSpaceOnUse" width="300" height="300">
+  <image href="pexels-pixabay-459451.jpg" x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+</pattern>
+
+<pattern id="rainForecastPattern" patternUnits="userSpaceOnUse" width="300" height="300">
+  <image href="pexels-ltfkxx99-35237805.jpg" x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+</pattern>
+
+<pattern id="seaTidesPattern" patternUnits="userSpaceOnUse" width="300" height="300">
+  <image href="pexels-rickyrecap-1784712.jpg" x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+</pattern>
+
+<pattern id="earthquakeReportsPattern" patternUnits="userSpaceOnUse" width="300" height="300">
+  <image href="pexels-jan-schwebel-716712998-30190705.jpg" x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+</pattern>
+
+<pattern id="airQualityPM25Pattern" patternUnits="userSpaceOnUse" width="300" height="300">
+  <image href="pexels-pixabay-257775.jpg" x="0" y="0" width="300" height="300" preserveAspectRatio="xMidYMid slice" />
+</pattern>
+
+</defs>
+
+
+      <!-- Hexes -->
+      <polygon class="hex-face" data-page="rainRadar" points="150,20 40,85 150,150" fill="url(#rainRadarPattern)" />
+<polygon class="hex-face" data-page="rainfallVolume" points="150,20 260,85 150,150" fill="url(#rainfallVolumePattern)" />
+<polygon class="hex-face" data-page="rainForecast" points="260,85 260,215 150,150" fill="url(#rainForecastPattern)" />
+<polygon class="hex-face" data-page="seaTides" points="260,215 150,280 150,150" fill="url(#seaTidesPattern)" />
+<polygon class="hex-face" data-page="earthquakeReports" points="150,280 40,215 150,150" fill="url(#earthquakeReportsPattern)" />
+<polygon class="hex-face" data-page="airQualityPM25" points="40,215 40,85 150,150" fill="url(#airQualityPM25Pattern)" />
+
+
+    </svg>
+  </div>
+
+  <div class="panel" id="panel">
+    <button class="close-btn" id="close">✕</button>
+    <div id="panel-content"></div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
