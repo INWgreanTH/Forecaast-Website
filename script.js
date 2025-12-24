@@ -1,64 +1,60 @@
+const panel = document.getElementById("panel");
+const panelContent = document.getElementById("panel-content");
+const closeBtn = document.getElementById("close");
+
+/* PAGE CONTENT */
 const pages = {
   rainRadar: `
-    <h1>Rain Radar</h1>
-    <div class="section">
-      Real-time radar and satellite visualization of rainfall patterns.
+    <h2>Rain Radar – Satellite Imagery</h2>
+
+    <div class="accordion">
+      <div class="accordion-header">
+        🌧️ TMD Radar ระยอง
+        <span>▼</span>
+      </div>
+      <div class="accordion-content">
+        <div class="accordion-inner">
+          <iframe
+            src="https://weather.tmd.go.th/ryg240_HQ_edit2.php"
+            loading="lazy">
+          </iframe>
+          <p style="font-size:13px;opacity:0.7;margin-top:8px;">
+            Source: Thai Meteorological Department (TMD)
+          </p>
+        </div>
+      </div>
     </div>
   `,
-  rainfallVolume: `
-    <h1>Rainfall and Water Volume</h1>
-    <div class="section">
-      Rainfall accumulation, water volume, and hydrological statistics.
-    </div>
-  `,
-  rainForecast: `
-    <h1>Rain Forecast</h1>
-    <div class="section">
-      Short-term and long-term precipitation forecasts for the region.
-    </div>
-  `,
-  seaTides: `
-    <h1>Sea Levels and Tides</h1>
-    <div class="section">
-      Tide levels, sea conditions, and coastal monitoring data.
-    </div>
-  `,
-  earthquakeReports: `
-    <h1>Earthquake Reports</h1>
-    <div class="section">
-      Seismic activity reports and recent earthquake events.
-    </div>
-  `,
-  airQualityPM25: `
-    <h1>Air Quality – PM2.5 in Rayong</h1>
-    <div class="section">
-      Air quality index and PM2.5 concentration monitoring in Rayong Province.
-    </div>
-  `
+  rainfallVolume: `<h2>Amount of Water and Rain</h2>`,
+  rainForecast: `<h2>Rain Forecast</h2>`,
+  seaTides: `<h2>Sea Level and Tides</h2>`,
+  earthquakeReports: `<h2>Earthquake</h2>`,
+  airQualityPM25: `<h2>PM2.5 in Rayong</h2>`
 };
 
-const panel = document.getElementById('panel');
-const panelContent = document.getElementById('panel-content');
-const closeBtn = document.getElementById('close');
-
-// Hex click handling
-document.querySelectorAll('.hex-face').forEach(hex => {
-  hex.addEventListener('click', () => {
-    const pageKey = hex.getAttribute('data-page');
-
-    if (pages[pageKey]) {
-      panelContent.innerHTML = pages[pageKey];
-      panel.classList.add('open');
-
-      // Highlight active hex
-      document.querySelectorAll('.hex-face').forEach(h => h.classList.remove('active'));
-      hex.classList.add('active');
-    }
+/* HEX CLICK */
+document.querySelectorAll(".hex-face").forEach(hex => {
+  hex.addEventListener("click", () => {
+    const key = hex.dataset.page;
+    panelContent.innerHTML = pages[key] || "";
+    panel.classList.add("open");
+    setupAccordion();
   });
 });
 
-// Close button
-closeBtn.addEventListener('click', () => {
-  panel.classList.remove('open');
-  document.querySelectorAll('.hex-face').forEach(h => h.classList.remove('active'));
+/* CLOSE PANEL */
+closeBtn.addEventListener("click", () => {
+  panel.classList.remove("open");
 });
+
+/* ACCORDION LOGIC */
+function setupAccordion() {
+  const header = document.querySelector(".accordion-header");
+  const content = document.querySelector(".accordion-content");
+
+  if (!header) return;
+
+  header.addEventListener("click", () => {
+    content.classList.toggle("open");
+  });
+}
