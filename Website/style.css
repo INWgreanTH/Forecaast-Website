@@ -1,92 +1,307 @@
+/* --- 1. Global Setup --- */
 :root {
     --hex-start-size: 550px;
     --panel-width: 75vw;
     --accent: #00d2ff;
     --bg-dark: #05080c;
+    --card-bg: rgba(255, 255, 255, 0.03);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --water-green: #52b788;
+    --water-orange: #d4a373;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-body { background: var(--bg-dark); color: #e8f4ff; overflow: hidden; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
 
-.top-bar { height: 60px; background: #0a0f16; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; padding: 0 30px; position: relative; z-index: 1000; }
-.status-dot { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; margin-right: 12px; box-shadow: 0 0 15px #00ff88; }
-.logo { font-weight: 500; font-size: 0.9rem; letter-spacing: 2px; color: #7f95ad; text-transform: uppercase; }
+body { 
+    background: var(--bg-dark); 
+    color: #e8f4ff; 
+    overflow: hidden; 
+}
 
-.app { display: flex; justify-content: center; align-items: center; height: calc(100vh - 60px); position: relative; }
+/* --- 2. Top Bar --- */
+.top-bar { 
+    height: 60px; 
+    background: #0a0f16; 
+    border-bottom: 1px solid var(--border-color); 
+    display: flex; 
+    align-items: center; 
+    padding: 0 30px; 
+    position: relative; 
+    z-index: 1000; 
+}
 
-/* HEXAGON SYSTEM */
-.hex-hub { width: var(--hex-start-size); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); z-index: 10; text-align: center; }
-.app.panel-open .hex-hub { transform: translateX(-40vw) scale(0.35); opacity: 0.5; }
+.status-dot { 
+    width: 10px; 
+    height: 10px; 
+    background: #00ff88; 
+    border-radius: 50%; 
+    margin-right: 12px; 
+    box-shadow: 0 0 15px #00ff88; 
+    animation: pulse 2s infinite;
+}
 
-.hex-face { opacity: 0.6; cursor: pointer; transition: 0.4s; }
-.hex-group:hover .hex-face { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 20px var(--accent)); }
-.hex-icon-label { fill: white; font-size: 10px; font-weight: 800; text-anchor: middle; pointer-events: none; text-shadow: 0 2px 10px black; }
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.7; }
+}
 
-/* PANEL SYSTEM */
+.logo { 
+    font-weight: 500; 
+    font-size: 0.9rem; 
+    letter-spacing: 2px; 
+    color: #7f95ad; 
+    text-transform: uppercase; 
+}
+
+/* --- 3. Hexagon Hub System --- */
+.app { 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: calc(100vh - 60px); 
+    position: relative; 
+}
+
+.hex-hub { 
+    width: var(--hex-start-size); 
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); 
+    z-index: 10; 
+}
+
+.app.panel-open .hex-hub { 
+    transform: translateX(-35vw) scale(0.35); 
+    opacity: 0.4; 
+}
+
+.hex-face { 
+    opacity: 0.7; 
+    cursor: pointer; 
+    transition: 0.4s; 
+}
+
+.hex-group:hover .hex-face { 
+    opacity: 1; 
+    filter: brightness(1.2) drop-shadow(0 0 15px var(--accent)); 
+}
+
+.hex-icon-label { 
+    fill: white; 
+    font-size: 10px; 
+    font-weight: 800; 
+    text-anchor: middle; 
+    pointer-events: none; 
+    text-shadow: 0 2px 5px black; 
+}
+
+/* --- 4. Panel System --- */
 .panel {
-    position: fixed; top: 0; right: 0; width: var(--panel-width); height: 100vh;
-    background: #0d141d; transform: translateX(100%); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 80px 40px 40px 40px; overflow-y: auto; box-shadow: -30px 0 80px rgba(0,0,0,0.9);
-    z-index: 500; border-left: 2px solid var(--accent);
+    position: fixed; 
+    top: 0; 
+    right: 0; 
+    width: var(--panel-width); 
+    height: 100vh;
+    background: #0d141d; 
+    transform: translateX(100%); 
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 80px 40px 40px 40px; 
+    overflow-y: auto; 
+    box-shadow: -20px 0 50px rgba(0,0,0,0.8);
+    z-index: 500; 
+    border-left: 2px solid var(--accent);
 }
+
 .panel.open { transform: translateX(0); }
 
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
-.close-btn { background: #cc3333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-/* DATA CARDS */
-.dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.card { background: rgba(255,255,255,0.02); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.05); }
-.card h3 { font-size: 1.1rem; margin-bottom: 15px; color: var(--accent); }
-
-iframe { width: 100%; height: 70vh; border-radius: 10px; border: none; background: white; }
-.radar-loop-img { width: 100%; border-radius: 10px; background: white; display: block; height: 45vh; object-fit: contain; }
-
-@media (max-width: 1400px) {
-    .dual-grid { grid-template-columns: 1fr; }
-    :root { --panel-width: 90vw; }
+.panel-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+    border-bottom: 1px solid var(--border-color); 
+    padding-bottom: 20px; 
 }
-/* การจัดวางปุ่มแบบตาราง */
+
+.close-btn { 
+    background: #cc3333; 
+    color: white; 
+    border: none; 
+    padding: 10px 20px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    transition: 0.3s;
+}
+
+.close-btn:hover { background: #ff4444; }
+
+/* --- 5. Data Content & Cards --- */
+.dual-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+}
+
+.card { 
+    background: var(--card-bg); 
+    padding: 25px; 
+    border-radius: 12px; 
+    margin-bottom: 25px; 
+    border: 1px solid var(--border-color); 
+}
+
+.card h3 { 
+    font-size: 1.1rem; 
+    margin-bottom: 15px; 
+    color: var(--accent); 
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+}
+
+iframe { 
+    width: 100%; 
+    height: 65vh; 
+    border-radius: 8px; 
+    border: none; 
+    background: white; 
+}
+
+.radar-loop-img { 
+    width: 100%; 
+    border-radius: 8px; 
+    background: #000; 
+    height: 40vh; 
+    object-fit: contain; 
+}
+
+/* --- 6. Water Level Table Styling (Z.38) --- */
+.water-container { 
+    background: transparent; 
+}
+
+.water-header-section {
+    margin-bottom: 20px;
+}
+
+.water-table-responsive { 
+    overflow-x: auto; 
+    border: 1px solid #333; 
+    border-radius: 8px; 
+}
+
+.water-main-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 900px; 
+    background: #111; 
+}
+
+.water-main-table th { 
+    padding: 12px 8px; 
+    border: 1px solid #333; 
+    font-size: 0.85rem; 
+    background: #1a1a1a;
+}
+
+.water-main-table td { 
+    padding: 10px 5px; 
+    border: 1px solid #222; 
+    text-align: center; 
+    font-size: 0.9rem; 
+    color: #ccc;
+}
+
+.date-row-header { 
+    color: var(--accent); 
+    font-weight: 600; 
+    letter-spacing: 1px;
+}
+
+.sub-h { 
+    font-size: 0.7rem !important; 
+    color: #666; 
+    text-transform: uppercase;
+}
+
+.time-column { 
+    background: #0a0a0a; 
+    color: #888; 
+    font-weight: bold; 
+    width: 85px; 
+    position: sticky;
+    left: 0;
+}
+
+/* ตัวเลขเน้นสีตามโจทย์ */
+/* การเน้นสีตัวเลขในตารางระดับน้ำ */
+.val-wl { 
+    color: #52b788 !important; /* เขียว */
+    font-weight: bold; 
+}
+
+.val-q { 
+    color: #d4a373 !important; /* ส้ม */
+}
+
+.date-row-header { 
+    color: #00d2ff; 
+    background: #1a1a1a; 
+}
+
+.time-column { 
+    background: #000; 
+    color: #888; 
+    font-weight: bold; 
+    position: sticky; 
+    left: 0; 
+}
+
+/* --- 7. Tides View System --- */
 .tide-grid-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 25px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-/* สไตล์ปุ่มกดเลือกเดือน */
 .tide-btn {
-    background: #ffffff;
-    color: #000000;
+    background: #fff;
+    color: #000;
     border: none;
-    padding: 10px;
-    font-size: 0.85rem;
+    padding: 8px;
+    font-size: 0.8rem;
     font-weight: bold;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
+    transition: 0.2s;
 }
 
 .tide-btn:hover {
     background: var(--accent);
-    transform: translateY(-2px);
+    color: #fff;
 }
 
-/* กรอบแสดงรูปภาพ */
 .tide-viewer {
-    background: #ffffff;
+    background: #fff;
     border-radius: 8px;
-    padding: 15px;
-    min-height: 400px;
+    padding: 10px;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
 }
 
 .tide-img-fluid {
     max-width: 100%;
     height: auto;
-    border-radius: 4px;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s;
+}
+
+/* --- 8. Responsive Adjustment --- */
+@media (max-width: 1200px) {
+    .dual-grid { grid-template-columns: 1fr; }
+    :root { --panel-width: 90vw; }
 }
