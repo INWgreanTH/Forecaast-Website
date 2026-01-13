@@ -1,308 +1,69 @@
-/* --- 1. Global Setup --- */
 :root {
     --hex-start-size: 550px;
-    --panel-width: 75vw;
     --accent: #00d2ff;
     --bg-dark: #05080c;
-    --card-bg: rgba(255, 255, 255, 0.03);
     --border-color: rgba(255, 255, 255, 0.1);
     --water-green: #52b788;
     --water-orange: #d4a373;
 }
 
-* { 
-    box-sizing: border-box; 
-    margin: 0; 
-    padding: 0; 
-    font-family: 'Inter', 'Segoe UI', sans-serif; 
-}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: var(--bg-dark); color: #e8f4ff; overflow: hidden; }
 
-body { 
-    background: var(--bg-dark); 
-    color: #e8f4ff; 
-    overflow: hidden; 
-}
+/* Top Bar */
+.top-bar { height: 60px; background: #0a0f16; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 30px; position: relative; z-index: 1000; }
+.status-dot { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; margin-right: 12px; box-shadow: 0 0 15px #00ff88; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
+.logo { font-weight: 600; font-size: 0.85rem; letter-spacing: 2px; color: #7f95ad; text-transform: uppercase; }
 
-/* --- 2. Top Bar --- */
-.top-bar { 
-    height: 60px; 
-    background: #0a0f16; 
-    border-bottom: 1px solid var(--border-color); 
-    display: flex; 
-    align-items: center; 
-    padding: 0 30px; 
-    position: relative; 
-    z-index: 1000; 
-}
+/* Hub Layout */
+.app { display: flex; justify-content: center; align-items: center; height: calc(100vh - 60px); position: relative; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+.hex-hub { width: var(--hex-start-size); position: relative; z-index: 10; transition: 0.8s; }
 
-.status-dot { 
-    width: 10px; 
-    height: 10px; 
-    background: #00ff88; 
-    border-radius: 50%; 
-    margin-right: 12px; 
-    box-shadow: 0 0 15px #00ff88; 
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(0.95); opacity: 0.7; }
-    50% { transform: scale(1.05); opacity: 1; }
-    100% { transform: scale(0.95); opacity: 0.7; }
-}
-
-.logo { 
-    font-weight: 600; 
-    font-size: 0.9rem; 
-    letter-spacing: 2px; 
-    color: #7f95ad; 
-    text-transform: uppercase; 
-}
-
-/* --- 3. Hexagon Hub System --- */
-.app { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    height: calc(100vh - 60px); 
-    position: relative; 
-    transition: 0.5s;
-}
-
-.hex-hub { 
-    width: var(--hex-start-size); 
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); 
-    z-index: 10; 
-}
-
-/* เมื่อเปิด Panel ให้ย่อ Hexagon หลบไปทางซ้าย */
-.app.panel-open .hex-hub { 
-    transform: translateX(-35vw) scale(0.35); 
-    opacity: 0.4; 
-}
-
-.hex-face { 
-    opacity: 0.7; 
-    cursor: pointer; 
-    transition: 0.4s; 
-    stroke: var(--accent);
-    stroke-width: 0.5;
-}
-
-.hex-group:hover .hex-face { 
-    opacity: 1; 
-    filter: brightness(1.2) drop-shadow(0 0 15px var(--accent)); 
-}
-
-.hex-icon-label { 
-    fill: white; 
-    font-size: 10px; 
-    font-weight: 800; 
-    text-anchor: middle; 
-    pointer-events: none; 
-    text-shadow: 0 2px 5px black; 
-}
-
+/* ตำแหน่ง Middle-Right Under Hexagon */
 .hover-label {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.8rem;
+    position: absolute;
+    bottom: -10px;
+    right: 160px; /* เยื้องมาทางขวาเพื่อให้กึ่งกลางคำอยู่ใต้ซีกขวาของ Hexagon */
+    font-size: 0.9rem;
+    font-weight: 800;
     letter-spacing: 3px;
     color: var(--accent);
-    opacity: 0.6;
+    text-transform: uppercase;
+    pointer-events: none;
+    opacity: 0.7;
+    transition: 0.3s ease;
 }
 
-/* --- 4. Panel System --- */
-.panel {
-    position: fixed; 
-    top: 0; 
-    right: 0; 
-    width: var(--panel-width); 
-    height: 100vh;
-    background: #0d141d; 
-    transform: translateX(100%); 
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    padding: 80px 40px 40px 40px; 
-    overflow-y: auto; 
-    box-shadow: -20px 0 50px rgba(0,0,0,0.8);
-    z-index: 500; 
-    border-left: 2px solid var(--accent);
-}
+/* SVG Polygons */
+.hex-face { opacity: 0.7; cursor: pointer; transition: 0.4s; stroke: var(--accent); stroke-width: 0.5; }
+.hex-group:hover .hex-face { opacity: 1; filter: brightness(1.1) drop-shadow(0 0 15px var(--accent)); }
+.hex-icon-label { fill: white; font-size: 10px; font-weight: 800; text-anchor: middle; pointer-events: none; text-shadow: 0 2px 5px black; }
 
+/* Panel Logic */
+.panel { position: fixed; top: 0; right: 0; width: 75vw; height: 100vh; background: #0d141d; transform: translateX(100%); transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); padding: 80px 40px; overflow-y: auto; z-index: 500; border-left: 2px solid var(--accent); }
 .panel.open { transform: translateX(0); }
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.close-btn { background: #cc3333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-.panel-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 30px; 
-    border-bottom: 1px solid var(--border-color); 
-    padding-bottom: 20px; 
-}
+.app.panel-open .hex-hub { transform: translateX(-35vw) scale(0.35); opacity: 0.3; }
 
-.close-btn { 
-    background: #cc3333; 
-    color: white; 
-    border: none; 
-    padding: 10px 20px; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    transition: 0.3s;
-}
+/* Content Elements */
+.card { background: rgba(255,255,255,0.03); padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+iframe { width: 100%; height: 65vh; border-radius: 8px; border: none; background: white; }
 
-.close-btn:hover { background: #ff4444; }
+/* Radar & Tables */
+.radar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.radar-zoom-wrap { aspect-ratio: 1/1; overflow: hidden; border-radius: 8px; border: 1px solid #333; }
+.radar-zoom-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.radar-btn { background: #222; color: #fff; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
+.radar-btn.active { background: var(--accent); border-color: var(--accent); }
 
-/* --- 5. Data Content & Cards --- */
-.dual-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 20px; 
-}
+.water-main-table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.85rem; }
+.water-main-table th { background: #1a1a1a; padding: 10px; border: 1px solid #333; }
+.water-main-table td { padding: 8px; border: 1px solid #222; text-align: center; }
+.val-wl { color: var(--water-green); font-weight: bold; }
+.val-q { color: var(--water-orange); }
 
-.card { 
-    background: var(--card-bg); 
-    padding: 25px; 
-    border-radius: 12px; 
-    margin-bottom: 25px; 
-    border: 1px solid var(--border-color); 
-}
-
-.card h3 { 
-    font-size: 1.1rem; 
-    margin-bottom: 15px; 
-    color: var(--accent); 
-    border-left: 3px solid var(--accent);
-    padding-left: 10px;
-}
-
-iframe { 
-    width: 100%; 
-    height: 65vh; 
-    border-radius: 8px; 
-    border: none; 
-    background: white; 
-}
-
-.radar-loop-img { 
-    width: 100%; 
-    border-radius: 8px; 
-    background: #000; 
-    height: auto; 
-    max-height: 45vh;
-    object-fit: contain; 
-}
-
-/* --- 6. Water Level Table Styling (Z.38) --- */
-.water-table-responsive { 
-    overflow-x: auto; 
-    border: 1px solid #333; 
-    border-radius: 8px; 
-    margin-top: 15px;
-}
-
-.water-main-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    min-width: 850px; 
-    background: #111; 
-}
-
-.water-main-table th { 
-    padding: 12px; 
-    border: 1px solid #333; 
-    font-size: 0.8rem; 
-    background: #1a1a1a;
-    color: #fff;
-}
-
-.water-main-table td { 
-    padding: 10px; 
-    border: 1px solid #222; 
-    text-align: center; 
-    font-size: 0.9rem; 
-}
-
-.date-row-header { 
-    color: var(--accent); 
-    font-weight: 600; 
-    background: #1a1a1a !important;
-}
-
-.time-column { 
-    background: #000 !important; 
-    color: #888; 
-    font-weight: bold; 
-    width: 80px; 
-    position: sticky; 
-    left: 0; 
-    z-index: 2;
-}
-
-.sub-h { 
-    font-size: 0.7rem !important; 
-    color: #666; 
-}
-
-/* เน้นสีข้อมูลระดับน้ำ */
-.val-wl { 
-    color: var(--water-green) !important; 
-    font-weight: bold; 
-}
-
-.val-q { 
-    color: var(--water-orange) !important; 
-}
-
-.water-status {
-    padding: 40px;
-    text-align: center;
-    color: #555;
-}
-
-/* --- 7. Tides View System --- */
-.tide-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
-.tide-btn {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 10px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.tide-btn:hover {
-    background: var(--accent);
-    color: #fff;
-}
-
-.tide-viewer {
-    background: #fff;
-    border-radius: 8px;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    min-height: 300px;
-}
-
-.tide-img-fluid {
-    max-width: 100%;
-    height: auto;
-    transition: opacity 0.3s ease-in-out;
-}
-
-/* --- 8. Responsive Adjustment --- */
-@media (max-width: 1024px) {
-    .dual-grid { grid-template-columns: 1fr; }
-    :root { --panel-width: 95vw; }
-    .app.panel-open .hex-hub { transform: scale(0); opacity: 0; } /* ซ่อน Hub เมื่อจอเล็กเพื่อประหยัดที่ */
-}
+.tide-grid-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+.tide-btn { padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
