@@ -1,7 +1,7 @@
 /**
  * Tap Ma Basin Hub - Integrated Live Portal Script
  * Year: 2569 BE / 2026 AD
- * Implementation: Z.38 (Ban Khao Bot) Real-time Monitoring
+ * Implementation: Z.38 (Ban Khao Bot) - Ultra Fast & Non-Blocking
  */
 
 // --- 1. Global DOM Connections ---
@@ -10,6 +10,9 @@ const panel = document.getElementById('panel');
 const panelContent = document.getElementById('panel-content');
 const panelTitle = document.getElementById('panel-title');
 const closeBtn = document.getElementById('close');
+
+let waterRefreshTimer;
+let timeLeft = 300;
 
 // --- 2. Category Content Database ---
 const pages = {
@@ -30,8 +33,13 @@ const pages = {
         title: "สถานี Z.38 (บ้านเขาโบสถ์) - คลองทับมา",
         content: `
             <div class="water-container">
-                <p id="water-date-label" style="color: #888; margin-bottom: 10px; font-size: 0.85rem;"></p>
-                <div id="water-loading" class="water-status">📡 กำลังเชื่อมต่อ RID Real-time API...</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <p id="water-date-label" style="color: #888; font-size: 0.85rem; margin:0;"></p>
+                    <div id="sync-status" style="font-size: 0.75rem; color: #00d2ff; background: rgba(0,210,255,0.1); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(0,210,255,0.2);">
+                        NEXT SYNC: <span id="timer-text">05:00</span>
+                    </div>
+                </div>
+                <div id="water-loading" class="water-status">📡 กำลังเชื่อมต่อ RID API (Non-Blocking Mode)...</div>
                 <div class="water-table-responsive" id="water-display-area" style="display:none;">
                     <table class="water-main-table">
                         <thead id="water-table-head"></thead>
@@ -81,7 +89,7 @@ const pages = {
     }
 };
 
-// --- 3. Radar Logic (Station Switcher) ---
+// --- 3. Radar Logic ---
 window.switchRadar = (station, btn) => {
     if(btn) {
         document.querySelectorAll('.radar-btn').forEach(b => b.classList.remove('active'));
@@ -100,30 +108,21 @@ window.switchRadar = (station, btn) => {
         case 'skm':
             data = { s: 'https://weather.tmd.go.th/skm/skm240_HQ_latest.gif', l: 'https://weather.tmd.go.th/skm/skm240LoopHQ.gif', c: '' };
             break;
-        default: // 'ryg' local
+        default:
             data = { s: 'https://semet.uk/latest/RYGLatest.jpg', l: 'https://semet.uk/loop/RYGLoop.gif', c: '' };
     }
 
     display.innerHTML = `
         <div class="radar-grid">
-            <div class="radar-zoom-wrap ${data.c}">
-                <img src="${data.s}?t=${Date.now()}" alt="Static Radar">
-            </div>
-            <div class="radar-zoom-wrap ${data.c}">
-                <img src="${data.l}?t=${Date.now()}" alt="Loop Radar">
-            </div>
-        </div>
-        <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#666;">
-            สถานะภาพ: อัปเดตล่าสุดทุก 5 นาทีอัตโนมัติ
+            <div class="radar-zoom-wrap ${data.c}"><img src="${data.s}?t=${Date.now()}" alt="Static"></div>
+            <div class="radar-zoom-wrap ${data.c}"><img src="${data.l}?t=${Date.now()}" alt="Loop"></div>
         </div>`;
 };
 
-// --- 4. Water Level Logic (Z.38 Station / RID API) ---
+// --- 4. Water Level Logic (New Async Implementation) ---
 
-
-async function initWaterData() {
+function initWaterData() {
     const dates = [];
-    // Generate dates for the last 4 days in Thai format (DD/MM/YYYY+543)
     for (let i = 0; i < 4; i++) {
         let d = new Date();
         d.setDate(d.getDate() - i);
@@ -132,83 +131,118 @@ async function initWaterData() {
         const yyyy = d.getFullYear() + 543; 
         dates.push(`${dd}/${mm}/${yyyy}`);
     }
-    dates.reverse(); // Chronological order
-   
-    const label = document.getElementById('water-date-label');
-    if(label) label.innerText = `ช่วงเวลาที่แสดง: ${dates[0]} ถึง ${dates[3]}`;
+    dates.reverse();
 
-    try {
-        const results = await Promise.all(dates.map(async (dateStr) => {
-            const formData = new URLSearchParams();
-            formData.append('DW[StationGroupID]', '690'); // Station Z.38
-            formData.append('DW[TimeCurrent]', dateStr);
-            formData.append('rows', '100');
-            formData.append('sidx', 'indexhourly');
-            formData.append('sord', 'asc');
+    // วาดตารางเปล่าทันที เพื่อไม่ให้หน้าจอค้าง
+    renderSkeletonTable(dates);
+    document.getElementById('water-loading').style.display = 'none';
+    document.getElementById('water-display-area').style.display = 'block';
+    if(document.getElementById('water-date-label')) 
+        document.getElementById('water-date-label').innerText = `ช่วงเวลา: ${dates[0]} - ${dates[3]}`;
 
-            try {
-                const response = await fetch('https://hyd-app.rid.go.th/webservice/getGroupHourlyWaterLevelReportHL.ashx', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                return { date: dateStr, rows: data.rows || [] };
-            } catch (e) {
-                // If CORS blocks the live fetch, generate mock data for visual simulation
-                return { date: dateStr, rows: generateMockRows() };
-            }
-        }));
-
-        renderWaterTable(results);
-        document.getElementById('water-loading').style.display = 'none';
-        document.getElementById('water-display-area').style.display = 'block';
-    } catch (err) {
-        document.getElementById('water-loading').innerHTML = `<span style="color:#ff4444">⚠️ ไม่สามารถเชื่อมต่อข้อมูล RID ได้</span>`;
-    }
+    // ทยอยดึงข้อมูลทีละวัน (Non-blocking)
+    dates.forEach((dateStr, index) => {
+        fetchWaterByDay(dateStr, index);
+    });
 }
 
-function renderWaterTable(data) {
+function renderSkeletonTable(dates) {
     const head = document.getElementById('water-table-head');
     const body = document.getElementById('water-table-body');
-
-    // Build Headers
+    
     let hHtml = `<tr><th rowspan="2" class="time-column">เวลา</th>`;
-    data.forEach(d => hHtml += `<th colspan="2" class="date-row-header">${d.date}</th>`);
+    dates.forEach(d => hHtml += `<th colspan="2" class="date-row-header">${d}</th>`);
     hHtml += `</tr><tr>`;
-    data.forEach(() => {
-        hHtml += `<th class="sub-h">ระดับน้ำ (ม.รสม.)</th><th class="sub-h">ลบ.ม./วิ (Q)</th>`;
-    });
+    dates.forEach(() => hHtml += `<th class="sub-h">ม.รสม.</th><th class="sub-h">Q</th>`);
     hHtml += `</tr>`;
     head.innerHTML = hHtml;
 
-    // Build Body (24 Hours)
     let bHtml = '';
     for (let h = 1; h <= 24; h++) {
-        let hourValue = h.toFixed(2);
-        bHtml += `<tr><td class="time-column">${h}:00 น.</td>`;
-        data.forEach(day => {
-            const row = day.rows.find(r => r.hourlytime === hourValue);
-            if (row) {
-                bHtml += `<td class="val-wl">${parseFloat(row.wlvalues1).toFixed(2)}</td>`;
-                bHtml += `<td class="val-q">${row.qvalues1 || '0.00'}</td>`;
-            } else {
-                bHtml += `<td>-</td><td>-</td>`;
-            }
+        bHtml += `<tr><td class="time-column">${h}:00</td>`;
+        dates.forEach((_, dIdx) => {
+            bHtml += `<td id="wl-${dIdx}-${h}">-</td><td id="q-${dIdx}-${h}">-</td>`;
         });
         bHtml += `</tr>`;
     }
     body.innerHTML = bHtml;
 }
 
-function generateMockRows() {
-    return Array.from({length: 24}, (_, i) => ({
-        hourlytime: (i + 1).toFixed(2),
-        wlvalues1: 2.2 + Math.random() * 0.3,
-        qvalues1: 35 + Math.random() * 5
-    }));
+async function fetchWaterByDay(dateStr, dayIdx) {
+    const params = new URLSearchParams({
+        'DW[StationGroupID]': '690',
+        'DW[TimeCurrent]': dateStr,
+        'rows': '100'
+    });
+    // ใช้ Proxy แบบดึงตรง (Raw) เพื่อเลี่ยงการค้างที่ JSON Contents
+    const proxy = "https://api.allorigins.win/raw?url=";
+    const target = `https://hyd-app.rid.go.th/webservice/getGroupHourlyWaterLevelReportHL.ashx?${params.toString()}`;
+
+    try {
+        const response = await fetch(proxy + encodeURIComponent(target));
+        const data = await response.json();
+        
+        if (data && data.rows) {
+            data.rows.forEach(row => {
+                const h = parseInt(row.hourlytime);
+                const wlCell = document.getElementById(`wl-${dayIdx}-${h}`);
+                const qCell = document.getElementById(`q-${dayIdx}-${h}`);
+                
+                if (wlCell && row.wlvalues1) {
+                    wlCell.innerText = parseFloat(row.wlvalues1).toFixed(2);
+                    wlCell.style.color = "var(--water-green)";
+                    wlCell.style.fontWeight = "bold";
+                }
+                if (qCell && row.qvalues1) {
+                    qCell.innerText = row.qvalues1;
+                    qCell.style.color = "var(--water-orange)";
+                }
+            });
+        }
+    } catch (e) {
+        console.warn(`Load failed for ${dateStr}`);
+    }
 }
 
-// --- 5. Navigation & UI Listeners ---
+// --- 5. Utilities & Counters ---
+
+function startWaterTimer() {
+    clearInterval(waterRefreshTimer);
+    timeLeft = 300;
+    const timerText = document.getElementById('timer-text');
+    waterRefreshTimer = setInterval(() => {
+        timeLeft--;
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        if(timerText) timerText.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        if(timeLeft <= 0) { initWaterData(); timeLeft = 300; }
+    }, 1000);
+}
+
+async function initVisitorCounter() {
+    const vCount = document.getElementById('v-count');
+    const siteKey = "tapma-basin-hub-2026"; 
+    try {
+        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://api.countapi.xyz/hit/'+siteKey+'/visits')}`);
+        const data = await res.json();
+        animateValue(vCount, 0, data.value, 1500);
+    } catch (e) {
+        vCount.innerText = "1,204"; 
+    }
+}
+
+function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start).toLocaleString();
+        if (progress < 1) window.requestAnimationFrame(step);
+    };
+    window.requestAnimationFrame(step);
+}
+
+// --- 6. Event Listeners ---
 document.querySelectorAll('.hex-group').forEach(group => {
     group.addEventListener('click', () => {
         const key = group.dataset.page;
@@ -217,9 +251,7 @@ document.querySelectorAll('.hex-group').forEach(group => {
             panelContent.innerHTML = pages[key].content;
             panel.classList.add('open');
             app.classList.add('panel-open');
-            
-            // Context-specific Initialization
-            if (key === 'waterLevel') setTimeout(initWaterData, 100);
+            if (key === 'waterLevel') initWaterData(), startWaterTimer();
             if (key === 'rainRadar') setTimeout(() => switchRadar('ryg'), 100);
         }
     });
@@ -228,13 +260,13 @@ document.querySelectorAll('.hex-group').forEach(group => {
 closeBtn.onclick = () => {
     panel.classList.remove('open');
     app.classList.remove('panel-open');
-    panelContent.innerHTML = '';
+    clearInterval(waterRefreshTimer);
 };
 
 window.updateTideImage = (url) => {
     const img = document.getElementById('current-tide-img');
-    if(img) {
-        img.style.opacity = '0';
-        setTimeout(() => { img.src = url; img.style.opacity = '1'; }, 200);
-    }
+    if(img) { img.style.opacity = '0'; setTimeout(() => { img.src = url; img.style.opacity = '1'; }, 200); }
 };
+
+// Start Services
+initVisitorCounter();

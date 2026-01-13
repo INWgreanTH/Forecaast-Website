@@ -67,3 +67,33 @@ iframe { width: 100%; height: 65vh; border-radius: 8px; border: none; background
 
 .tide-grid-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
 .tide-btn { padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.visitor-counter {
+    margin-left: auto; /* ดันไปทางขวาสุด */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 210, 255, 0.05);
+    padding: 5px 15px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 210, 255, 0.1);
+}
+
+.v-label {
+    font-size: 0.65rem;
+    color: #7f95ad;
+    letter-spacing: 1px;
+}
+
+#v-count {
+    font-family: 'monospace';
+    font-weight: 800;
+    color: var(--accent);
+    text-shadow: 0 0 10px var(--accent);
+}
