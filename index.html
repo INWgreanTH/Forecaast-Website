@@ -19,7 +19,7 @@
         <div class="hex-hub" id="hex-hub">
             <svg viewBox="0 0 300 300" id="hex-svg">
                 <defs>
-                    <pattern id="radar" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/13866733/pexels-photo-13866733.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
+                    <pattern id="radar" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/13866733/pexels-photo-13866733.jpeg" width="550" height="550" x="-230" y="-30" preserveAspectRatio="xMidYMid slice" /></pattern>
                     <pattern id="water" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/459451/pexels-photo-459451.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
                     <pattern id="forecast" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/1118873/pexels-photo-1118873.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
                     <pattern id="tides" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/1784712/pexels-photo-1784712.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
@@ -31,27 +31,22 @@
                     <polygon class="hex-face" points="150,20 40,85 150,150" fill="url(#radar)" />
                     <text x="95" y="85" class="hex-icon-label">RADAR</text>
                 </g>
-
                 <g class="hex-group" data-page="waterLevel">
-    <polygon class="hex-face" points="150,20 260,85 150,150" fill="url(#water)" />
-    <text x="205" y="85" class="hex-icon-label">WATER</text>
-</g>
-
+                    <polygon class="hex-face" points="150,20 260,85 150,150" fill="url(#water)" />
+                    <text x="205" y="85" class="hex-icon-label">WATER</text>
+                </g>
                 <g class="hex-group" data-page="rainForecast">
                     <polygon class="hex-face" points="260,85 260,215 150,150" fill="url(#forecast)" />
                     <text x="210" y="155" class="hex-icon-label">FORECAST</text>
                 </g>
-
                 <g class="hex-group" data-page="seaTides">
                     <polygon class="hex-face" points="260,215 150,280 150,150" fill="url(#tides)" />
                     <text x="205" y="225" class="hex-icon-label">TIDES</text>
                 </g>
-
                 <g class="hex-group" data-page="earthquakeReports">
                     <polygon class="hex-face" points="150,280 40,215 150,150" fill="url(#earthquake)" />
                     <text x="95" y="225" class="hex-icon-label">QUAKE</text>
                 </g>
-
                 <g class="hex-group" data-page="airQualityPM25">
                     <polygon class="hex-face" points="40,215 40,85 150,150" fill="url(#air)" />
                     <text x="90" y="155" class="hex-icon-label">PM 2.5</text>
