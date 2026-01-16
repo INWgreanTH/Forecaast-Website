@@ -27,17 +27,18 @@ const pages = {
             </div>`
     },
     waterLevel: {
-        title: "สถานี Z.38 (บ้านเขาโบสถ์) - คลองทับมา",
+        title: "ระดับน้ำในคลองทับมา (RID Real-time)",
         content: `
-            <div class="water-container">
-                <p id="water-date-label" style="color: #888; margin-bottom: 10px; font-size: 0.85rem;"></p>
-                <div id="water-loading" class="water-status">📡 กำลังเชื่อมต่อ RID Real-time API...</div>
-                <div class="water-table-responsive" id="water-display-area" style="display:none;">
-                    <table class="water-main-table">
-                        <thead id="water-table-head"></thead>
-                        <tbody id="water-table-body"></tbody>
-                    </table>
+            <div class="card" style="height: 75vh; padding: 0; overflow: hidden;">
+                <div style="background: #1a1a1a; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.8rem; color: var(--accent);">Source: กรมชลประทาน (hyd-app.rid.go.th)</span>
+                    <button class="radar-btn" onclick="refreshWaterIframe()" style="font-size: 0.7rem; padding: 5px 10px;">🔄 REFRESH</button>
                 </div>
+                <iframe 
+                    id="rid-iframe"
+                    src="https://hyd-app.rid.go.th/hydro6h.html" 
+                    style="width: 100%; height: 100%; border: none; background: white;"
+                ></iframe>
             </div>`
     },
     rainForecast: {
@@ -118,88 +119,10 @@ window.switchRadar = (station, btn) => {
         </div>`;
 };
 
-// --- 4. Water Level Logic (Z.38 Station / RID API) ---
-
-
-async function initWaterData() {
-    const dates = [];
-    // Generate dates for the last 4 days in Thai format (DD/MM/YYYY+543)
-    for (let i = 0; i < 4; i++) {
-        let d = new Date();
-        d.setDate(d.getDate() - i);
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear() + 543; 
-        dates.push(`${dd}/${mm}/${yyyy}`);
-    }
-    dates.reverse(); // Chronological order
-   
-    const label = document.getElementById('water-date-label');
-    if(label) label.innerText = `ช่วงเวลาที่แสดง: ${dates[0]} ถึง ${dates[3]}`;
-
-    try {
-        const results = await Promise.all(dates.map(async (dateStr) => {
-            const formData = new URLSearchParams();
-            formData.append('DW[StationGroupID]', '690'); // Station Z.38
-            formData.append('DW[TimeCurrent]', dateStr);
-            formData.append('rows', '100');
-            formData.append('sidx', 'indexhourly');
-            formData.append('sord', 'asc');
-
-            try {
-                const response = await fetch('https://hyd-app.rid.go.th/webservice/getGroupHourlyWaterLevelReportHL.ashx', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                return { date: dateStr, rows: data.rows || [] };
-            } catch (e) {
-                // If CORS blocks the live fetch, generate mock data for visual simulation
-                return { date: dateStr, rows: generateMockRows() };
-            }
-        }));
-
-        renderWaterTable(results);
-        document.getElementById('water-loading').style.display = 'none';
-        document.getElementById('water-display-area').style.display = 'block';
-    } catch (err) {
-        document.getElementById('water-loading').innerHTML = `<span style="color:#ff4444">⚠️ ไม่สามารถเชื่อมต่อข้อมูล RID ได้</span>`;
-    }
+window.refreshWaterIframe = () => {
+    const frame = document.getElementById('rid-iframe');
+    if(frame) frame.src = frame.src;
 }
-
-function renderWaterTable(data) {
-    const head = document.getElementById('water-table-head');
-    const body = document.getElementById('water-table-body');
-
-    // Build Headers
-    let hHtml = `<tr><th rowspan="2" class="time-column">เวลา</th>`;
-    data.forEach(d => hHtml += `<th colspan="2" class="date-row-header">${d.date}</th>`);
-    hHtml += `</tr><tr>`;
-    data.forEach(() => {
-        hHtml += `<th class="sub-h">ระดับน้ำ (ม.รสม.)</th><th class="sub-h">ลบ.ม./วิ (Q)</th>`;
-    });
-    hHtml += `</tr>`;
-    head.innerHTML = hHtml;
-
-    // Build Body (24 Hours)
-    let bHtml = '';
-    for (let h = 1; h <= 24; h++) {
-        let hourValue = h.toFixed(2);
-        bHtml += `<tr><td class="time-column">${h}:00 น.</td>`;
-        data.forEach(day => {
-            const row = day.rows.find(r => r.hourlytime === hourValue);
-            if (row) {
-                bHtml += `<td class="val-wl">${parseFloat(row.wlvalues1).toFixed(2)}</td>`;
-                bHtml += `<td class="val-q">${row.qvalues1 || '0.00'}</td>`;
-            } else {
-                bHtml += `<td>-</td><td>-</td>`;
-            }
-        });
-        bHtml += `</tr>`;
-    }
-    body.innerHTML = bHtml;
-}
-
 
 // --- 5. Navigation & UI Listeners ---
 document.querySelectorAll('.hex-group').forEach(group => {
