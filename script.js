@@ -200,13 +200,6 @@ function renderWaterTable(data) {
     body.innerHTML = bHtml;
 }
 
-function generateMockRows() {
-    return Array.from({length: 24}, (_, i) => ({
-        hourlytime: (i + 1).toFixed(2),
-        wlvalues1: 2.2 + Math.random() * 0.3,
-        qvalues1: 35 + Math.random() * 5
-    }));
-}
 
 // --- 5. Navigation & UI Listeners ---
 document.querySelectorAll('.hex-group').forEach(group => {
