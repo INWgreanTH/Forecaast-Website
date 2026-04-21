@@ -6,6 +6,7 @@
     <title>Tap Ma Basin Hub | Rayong 2026</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 </head>
 <body>
     <header class="top-bar">
@@ -23,7 +24,7 @@
                     <pattern id="water" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/459451/pexels-photo-459451.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
                     <pattern id="forecast" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/1118873/pexels-photo-1118873.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
                     <pattern id="tides" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/1784712/pexels-photo-1784712.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
-                    <pattern id="earthquake" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/30190705/pexels-photo-30190705.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
+                    <pattern id="cctv-pattern" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/17489158/pexels-photo-17489158.jpeg" width="400" height="400" x="-50" y="-50" preserveAspectRatio="xMidYMid slice" /></pattern>
                     <pattern id="air" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/257775/pexels-photo-257775.jpeg" width="300" height="300" preserveAspectRatio="xMidYMid slice" /></pattern>
                 </defs>
 
@@ -43,9 +44,9 @@
                     <polygon class="hex-face" points="260,215 150,280 150,150" fill="url(#tides)" />
                     <text x="205" y="225" class="hex-icon-label">TIDES</text>
                 </g>
-                <g class="hex-group" data-page="earthquakeReports">
-                    <polygon class="hex-face" points="150,280 40,215 150,150" fill="url(#earthquake)" />
-                    <text x="95" y="225" class="hex-icon-label">QUAKE</text>
+                <g class="hex-group" data-page="cctvMonitor">
+                    <polygon class="hex-face" points="150,280 40,215 150,150" fill="url(#cctv-pattern)" />
+                    <text x="95" y="225" class="hex-icon-label">CCTV</text>
                 </g>
                 <g class="hex-group" data-page="airQualityPM25">
                     <polygon class="hex-face" points="40,215 40,85 150,150" fill="url(#air)" />
@@ -65,7 +66,7 @@
         
     </main>
 
-<div class="counter-footer">
+    <div class="counter-footer">
         <a href="https://www.hitwebcounter.com/" target="_blank">
             <img src="https://hitwebcounter.com/counter/counter.php?page=21469933&style=0036&nbdigits=7&type=page&initCount=0" title="Free Tools" Alt="Free Tools" border="0" />
         </a>

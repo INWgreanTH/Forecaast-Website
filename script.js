@@ -51,34 +51,41 @@ const pages = {
             <div class="card">
                 <div class="tide-grid-container">
                     ${[
-                        {n:'ม.ค.', u:'https://img2.pic.in.th/PakNamRayong_Page_01.jpg'},
-                        {n:'ก.พ.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_02.jpg'},
-                        {n:'มี.ค.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_03.jpg'},
-                        {n:'เม.ย.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_04.jpg'},
-                        {n:'พ.ค.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_05.jpg'},
-                        {n:'มิ.ย.', u:'https://img2.pic.in.th/PakNamRayong_Page_06.jpg'},
-                        {n:'ก.ค.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_07.jpg'},
-                        {n:'ส.ค.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_08.jpg'},
-                        {n:'ก.ย.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_09.jpg'},
-                        {n:'ต.ค.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_10.jpg'},
-                        {n:'พ.ย.', u:'https://img5.pic.in.th/file/secure-sv1/PakNamRayong_Page_11.jpg'},
-                        {n:'ธ.ค.', u:'https://img2.pic.in.th/PakNamRayong_Page_12.jpg'}
+                        {n:'ม.ค.', u:'Jan.png'},
+                        {n:'ก.พ.', u:'Feb.png'},
+                        {n:'มี.ค.', u:'March.png'},
+                        {n:'เม.ย.', u:'Apr.png'},
+                        {n:'พ.ค.', u:'May.png'},
+                        {n:'มิ.ย.', u:'Jun.png'},
+                        {n:'ก.ค.', u:'July.png'},
+                        {n:'ส.ค.', u:'Aug.png'},
+                        {n:'ก.ย.', u:'Sep.png'},
+                        {n:'ต.ค.', u:'Oct.png'},
+                        {n:'พ.ย.', u:'Nov.png'},
+                        {n:'ธ.ค.', u:'Dec.png'}
                     ].map(m =>
                         `<button class="tide-btn" onclick="updateTideImage('${m.u}')">${m.n}</button>`
                     ).join('')}
                 </div>
                 <div class="tide-viewer">
-                    <img id="current-tide-img" src="https://img2.pic.in.th/PakNamRayong_Page_01.jpg" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
+                    <img id="current-tide-img" src="Jan.png" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
                 </div>
+            </div>`
+    },
+    cctvMonitor: {
+        title: "CCTV River & Highway Surveillance",
+        content: `
+            <div class="card" style="height: 75vh; padding: 15px; overflow-y: auto; background: #0b0b0c;">
+                <div style="background: #1a1a1a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; border-radius: 8px;">
+                    <span style="font-size: 0.85rem; color: #ff4444; font-weight: 800; animation: pulse 2s infinite;">🔴 LIVE CCTVs</span>
+                    <span style="font-size: 0.8rem; color: var(--accent); font-family: monospace;">RAYONG MUNICIPALITY</span>
+                </div>
+                <div class="cctv-grid" id="cctv-grid-container"></div>
             </div>`
     },
     airQualityPM25: {
         title: "คุณภาพอากาศ PM 2.5",
         content: `<div class="card"><iframe src="https://map.purpleair.com/air-quality-standards-us-epa-aqi?select=190049#11/12.68/101.25"></iframe></div>`
-    },
-    earthquakeReports: {
-        title: "รายงานแผ่นดินไหว",
-        content: `<div class="card"><iframe src="https://earthquake.tmd.go.th/"></iframe></div>`
     }
 };
 
@@ -124,6 +131,79 @@ window.refreshWaterIframe = () => {
     if(frame) frame.src = frame.src;
 }
 
+window.updateTideImage = (url) => {
+    const img = document.getElementById('current-tide-img');
+    if(img) {
+        img.style.opacity = '0';
+        setTimeout(() => { img.src = url; img.style.opacity = '1'; }, 200);
+    }
+};
+
+// --- 4. CCTV Grid Logic ---
+const CCTV_SOURCES = [
+    { url: 'https://stream1.ioc.pattaya.go.th/live/RC-025.m3u8', label: 'ถ.สุขุมวิท พัทยา' },
+    { url: 'https://streaming2.highwaytraffic.go.th/Phase12/PER_12_022.stream/playlist.m3u8', label: 'ถ.สาย36 ขาเข้า ต.โป่ง' },
+    { url: 'https://streaming2.highwaytraffic.go.th/Phase11/PER_11_030.stream/playlist.m3u8', label: 'ถ.สาย331 ห้วยใหญ่ เหนือ' },
+    { url: 'https://streaming2.highwaytraffic.go.th/P16/PER_16_013.stream/playlist.m3u8', label: 'ถ.สาย331 พลูตาหลวง ใต้' },
+    { url: 'https://streaming2.highwaytraffic.go.th/Phase12/PER_12_028.stream/playlist.m3u8', label: 'ถ.สาย3191 แยกนิคมฯ เหนือ' },
+    { url: 'https://streaming2.highwaytraffic.go.th/P16/PER_16_016_OUT.stream/playlist.m3u8', label: 'ถ.สาย36 หนองบอน เข้าเมือง' },
+    { url: 'https://streaming2.highwaytraffic.go.th/P16/PER_16_016_IN.stream/playlist.m3u8', label: 'ถ.สาย36 หนองบอน ออกเมือง' },
+    { url: 'https://streaming1.highwaytraffic.go.th/Phase5/PER_5_003.stream/playlist.m3u8', label: 'ถ.สุขุมวิท มาบตาพุด' },
+    { url: 'https://streaming2.highwaytraffic.go.th/Phase12/PER_12_029_IN.stream/playlist.m3u8', label: 'ถ.สาย3138 บ้านค่าย ขาเข้า' },
+    { url: 'https://streaming2.highwaytraffic.go.th/Phase12/PER_12_029_OUT.stream/playlist.m3u8', label: 'ถ.สาย3138 บ้านค่าย ขาออก' },
+    { url: 'https://telemetry.dwr.go.th/api/public/cctv/mjpegStream?stnCode=TA170203', label: 'ถ.ค.2 แยกโรงทราย' },
+    { url: 'https://coastalradar.gistda.or.th/cctvlive/106503982638575697228475930513862621829/live.html', label: 'หาดพยูน บ้านฉาง', iframe: true, zoom: true },
+    { url: 'https://coastalradar.gistda.or.th/cctvlive/153740451252623587407017825114242711603/live.html', label: 'หาดแสงจันทร์ ปากน้ำ', iframe: true, zoom: true },
+    { url: 'https://coastalradar.gistda.or.th/cctvlive/100352499133831682028641249087836640405/live.html', label: 'ลานหินขาว ตะพง', iframe: true, zoom: true },
+    { url: 'https://coastalradar.gistda.or.th/cctvlive/116185462407234580845451996571834281111/live.html', label: 'หาดแหลมแม่พิมพ์', iframe: true, zoom: true }
+];
+
+function initCCTVGrid() {
+    const grid = document.getElementById('cctv-grid-container');
+    if (!grid) return;
+    grid.innerHTML = ''; // เคลียร์กล้องเก่าทิ้ง
+
+    CCTV_SOURCES.forEach(src => {
+        const wrap = document.createElement('div');
+        wrap.className = 'cctv-player-wrap';
+        if (src.zoom) wrap.classList.add('cctv-zoom20');
+
+        if (src.url.includes('.m3u8')) {
+            const video = document.createElement('video');
+            video.controls = true;
+            video.muted = true;
+            video.playsInline = true;
+            video.autoplay = true;
+            
+            if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = src.url;
+            } else if (window.Hls && Hls.isSupported()) {
+                const hls = new Hls({ maxBufferLength: 10, liveSyncDurationCount: 3 });
+                hls.loadSource(src.url);
+                hls.attachMedia(video);
+            }
+            wrap.appendChild(video);
+        } else if (src.iframe) {
+            const iframe = document.createElement('iframe');
+            iframe.src = src.url;
+            iframe.allowFullscreen = true;
+            wrap.appendChild(iframe);
+        } else if (src.url.includes('mjpegStream')) {
+            const img = document.createElement('img');
+            img.src = src.url;
+            img.alt = src.label;
+            wrap.appendChild(img);
+        }
+
+        const label = document.createElement('div');
+        label.className = 'cctv-label';
+        label.textContent = src.label;
+        wrap.appendChild(label);
+
+        grid.appendChild(wrap);
+    });
+}
+
 // --- 5. Navigation & UI Listeners ---
 document.querySelectorAll('.hex-group').forEach(group => {
     group.addEventListener('click', () => {
@@ -137,6 +217,7 @@ document.querySelectorAll('.hex-group').forEach(group => {
             // Context-specific Initialization
             if (key === 'waterLevel') setTimeout(initWaterData, 100);
             if (key === 'rainRadar') setTimeout(() => switchRadar('ryg'), 100);
+            if (key === 'cctvMonitor') setTimeout(initCCTVGrid, 100); // โหลดกล้องเมื่อเปิด Panel
         }
     });
 });
@@ -144,13 +225,5 @@ document.querySelectorAll('.hex-group').forEach(group => {
 closeBtn.onclick = () => {
     panel.classList.remove('open');
     app.classList.remove('panel-open');
-    panelContent.innerHTML = '';
-};
-
-window.updateTideImage = (url) => {
-    const img = document.getElementById('current-tide-img');
-    if(img) {
-        img.style.opacity = '0';
-        setTimeout(() => { img.src = url; img.style.opacity = '1'; }, 200);
-    }
+    setTimeout(() => { panelContent.innerHTML = ''; }, 600); // ล้างเนื้อหาเมื่อปิด
 };
