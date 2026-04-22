@@ -83,7 +83,7 @@ const pages = {
                     ).join('')}
                 </div>
                 <div class="tide-viewer">
-                    <img id="current-tide-img" src="Jan.jpg" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
+                    <img id="current-tide-img" src="Jan.png" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
                 </div>
             </div>`
     }
