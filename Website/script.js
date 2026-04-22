@@ -41,9 +41,24 @@ const pages = {
                 ></iframe>
             </div>`
     },
+    airQualityPM25: {
+        title: "คุณภาพอากาศ PM 2.5",
+        content: `<div class="card"><iframe src="https://map.purpleair.com/air-quality-standards-us-epa-aqi?select=190049#11/12.68/101.25"></iframe></div>`
+    },
     rainForecast: {
         title: "พยากรณ์อากาศรายชั่วโมง - Rayong",
         content: `<div class="card"><iframe src="https://www.yr.no/en/content/2-7735915/table.html"></iframe></div>`
+    },
+    cctvMonitor: {
+        title: "CCTV River & Highway Surveillance",
+        content: `
+            <div class="card" style="height: 75vh; padding: 15px; overflow-y: auto; background: #0b0b0c;">
+                <div style="background: #1a1a1a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; border-radius: 8px;">
+                    <span style="font-size: 0.85rem; color: #ff4444; font-weight: 800; animation: pulse 2s infinite;">🔴 LIVE CCTVs</span>
+                    <span style="font-size: 0.8rem; color: var(--accent); font-family: monospace;">RAYONG MUNICIPALITY</span>
+                </div>
+                <div class="cctv-grid" id="cctv-grid-container"></div>
+            </div>`
     },
     seaTides: {
         title: "ระดับน้ำทะเล (ปากน้ำระยอง) ปี 2569",
@@ -68,28 +83,13 @@ const pages = {
                     ).join('')}
                 </div>
                 <div class="tide-viewer">
-                    <img id="current-tide-img" src="Jan.png" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
+                    <img id="current-tide-img" src="Jan.jpg" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
                 </div>
             </div>`
-    },
-    cctvMonitor: {
-        title: "CCTV River & Highway Surveillance",
-        content: `
-            <div class="card" style="height: 75vh; padding: 15px; overflow-y: auto; background: #0b0b0c;">
-                <div style="background: #1a1a1a; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; border-radius: 8px;">
-                    <span style="font-size: 0.85rem; color: #ff4444; font-weight: 800; animation: pulse 2s infinite;">🔴 LIVE CCTVs</span>
-                    <span style="font-size: 0.8rem; color: var(--accent); font-family: monospace;">RAYONG MUNICIPALITY</span>
-                </div>
-                <div class="cctv-grid" id="cctv-grid-container"></div>
-            </div>`
-    },
-    airQualityPM25: {
-        title: "คุณภาพอากาศ PM 2.5",
-        content: `<div class="card"><iframe src="https://map.purpleair.com/air-quality-standards-us-epa-aqi?select=190049#11/12.68/101.25"></iframe></div>`
     }
 };
 
-// --- 3. Radar Logic (Station Switcher) ---
+// --- 3. Radar Logic ---
 window.switchRadar = (station, btn) => {
     if(btn) {
         document.querySelectorAll('.radar-btn').forEach(b => b.classList.remove('active'));
@@ -99,17 +99,10 @@ window.switchRadar = (station, btn) => {
     let data = { s: 'https://semet.uk/latest/RYGLatest.jpg', l: 'https://semet.uk/loop/RYGLoop.gif', c: '' };
     
     switch(station) {
-        case 'ryg-e':
-            data = { s: 'https://weather.tmd.go.th/ryg/ryg240_HQ_latest.gif', l: 'https://weather.tmd.go.th/ryg/ryg240LoopHQ.gif', c: 'focus-east' };
-            break;
-        case 'svp':
-            data = { s: 'https://weather.tmd.go.th/svp/svp240_HQ_latest.gif', l: 'https://weather.tmd.go.th/svp/svp240LoopHQ.gif', c: '' };
-            break;
-        case 'skm':
-            data = { s: 'https://weather.tmd.go.th/skm/skm240_HQ_latest.gif', l: 'https://weather.tmd.go.th/skm/skm240LoopHQ.gif', c: '' };
-            break;
-        default: // 'ryg' local
-            data = { s: 'https://semet.uk/latest/RYGLatest.jpg', l: 'https://semet.uk/loop/RYGLoop.gif', c: '' };
+        case 'ryg-e': data = { s: 'https://weather.tmd.go.th/ryg/ryg240_HQ_latest.gif', l: 'https://weather.tmd.go.th/ryg/ryg240LoopHQ.gif', c: 'focus-east' }; break;
+        case 'svp': data = { s: 'https://weather.tmd.go.th/svp/svp240_HQ_latest.gif', l: 'https://weather.tmd.go.th/svp/svp240LoopHQ.gif', c: '' }; break;
+        case 'skm': data = { s: 'https://weather.tmd.go.th/skm/skm240_HQ_latest.gif', l: 'https://weather.tmd.go.th/skm/skm240LoopHQ.gif', c: '' }; break;
+        default: data = { s: 'https://semet.uk/latest/RYGLatest.jpg', l: 'https://semet.uk/loop/RYGLoop.gif', c: '' };
     }
 
     display.innerHTML = `
@@ -121,15 +114,13 @@ window.switchRadar = (station, btn) => {
                 <img src="${data.l}?t=${Date.now()}" alt="Loop Radar">
             </div>
         </div>
-        <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#666;">
-            สถานะภาพ: อัปเดตล่าสุดทุก 5 นาทีอัตโนมัติ
-        </div>`;
+        <div style="text-align:center; margin-top:10px; font-size:0.8rem; color:#666;">สถานะภาพ: อัปเดตล่าสุดทุก 5 นาทีอัตโนมัติ</div>`;
 };
 
 window.refreshWaterIframe = () => {
     const frame = document.getElementById('rid-iframe');
     if(frame) frame.src = frame.src;
-}
+};
 
 window.updateTideImage = (url) => {
     const img = document.getElementById('current-tide-img');
@@ -161,7 +152,7 @@ const CCTV_SOURCES = [
 function initCCTVGrid() {
     const grid = document.getElementById('cctv-grid-container');
     if (!grid) return;
-    grid.innerHTML = ''; // เคลียร์กล้องเก่าทิ้ง
+    grid.innerHTML = ''; 
 
     CCTV_SOURCES.forEach(src => {
         const wrap = document.createElement('div');
@@ -170,17 +161,33 @@ function initCCTVGrid() {
 
         if (src.url.includes('.m3u8')) {
             const video = document.createElement('video');
-            video.controls = true;
+            // บังคับ Mute และ Autoplay เพื่อให้เบราว์เซอร์อนุญาตให้เล่น
             video.muted = true;
             video.playsInline = true;
             video.autoplay = true;
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            
+            // เปิดให้ผู้ใช้กด Control (ขยายจอ) ได้
+            video.controls = true; 
             
             if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // สำหรับ Safari / iOS
                 video.src = src.url;
+                video.addEventListener('loadedmetadata', () => {
+                    video.play().catch(e => console.log("Native Autoplay prevented:", e));
+                });
             } else if (window.Hls && Hls.isSupported()) {
+                // สำหรับ Chrome / Edge / Firefox
                 const hls = new Hls({ maxBufferLength: 10, liveSyncDurationCount: 3 });
                 hls.loadSource(src.url);
                 hls.attachMedia(video);
+                
+                // บังคับ Play ทันทีเมื่อ HLS จัดเตรียมไฟล์เสร็จ
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.log("HLS Autoplay prevented:", e));
+                });
             }
             wrap.appendChild(video);
         } else if (src.iframe) {
@@ -214,10 +221,10 @@ document.querySelectorAll('.hex-group').forEach(group => {
             panel.classList.add('open');
             app.classList.add('panel-open');
             
-            // Context-specific Initialization
             if (key === 'waterLevel') setTimeout(initWaterData, 100);
             if (key === 'rainRadar') setTimeout(() => switchRadar('ryg'), 100);
-            if (key === 'cctvMonitor') setTimeout(initCCTVGrid, 100); // โหลดกล้องเมื่อเปิด Panel
+            // เมื่อกดเข้าหน้า CCTV ให้รันฟังก์ชันโหลดกล้องทันที
+            if (key === 'cctvMonitor') setTimeout(initCCTVGrid, 100);
         }
     });
 });
@@ -225,5 +232,5 @@ document.querySelectorAll('.hex-group').forEach(group => {
 closeBtn.onclick = () => {
     panel.classList.remove('open');
     app.classList.remove('panel-open');
-    setTimeout(() => { panelContent.innerHTML = ''; }, 600); // ล้างเนื้อหาเมื่อปิด
+    setTimeout(() => { panelContent.innerHTML = ''; }, 600);
 };
