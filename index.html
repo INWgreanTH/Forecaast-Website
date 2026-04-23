@@ -9,12 +9,18 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 </head>
 <body>
-    <header class="top-bar">
-        <div class="logo-container">
-            <span class="status-dot"></span>
-            <div class="logo">Tap Ma River Basin Monitoring | Live Portal</div>
+</header>
+
+    <div class="live-ticker">
+        <div class="ticker-wrap">
+            <div class="ticker-move">
+                <span class="ticker-item">⚠️ <strong style="color: #ff4444;">เฝ้าระวัง:</strong> ระดับน้ำคลองทับมา (Z.38) ปัจจุบันปกติ (ต่ำกว่าตลิ่ง 2.50 ม.)</span>
+                <span class="ticker-item">💨 <strong style="color: #ffcc00;">คุณภาพอากาศ (PM 2.5):</strong> ระยองตอนกลางอยู่ในเกณฑ์ปานกลาง ควรสวมหน้ากากอนามัย</span>
+                <span class="ticker-item">🌧️ <strong style="color: #00d2ff;">สภาพอากาศ:</strong> มีเมฆบางส่วน โอกาสเกิดฝน 20% ในช่วงบ่าย</span>
+                <span class="ticker-item">📉 <strong style="color: #00ff88;">สถานการณ์น้ำทะเล:</strong> น้ำขึ้นสูงสุดเวลา 18:30 น. วันนี้</span>
+            </div>
         </div>
-    </header>
+    </div>
 
     <main class="app" id="app">
         <div class="hex-hub" id="hex-hub">
@@ -72,9 +78,34 @@
         </a>
     </div>
 
-    <a href="https://forms.gle/Nsdrd59q6epJF7zs5" target="_blank" class="feedback-footer">
-        📝 ประเมินระบบ (Feedback)
-    </a>
+    <div class="bottom-right-actions">
+        <button id="help-btn" class="action-btn help-btn">ℹ️ วิธีใช้งาน</button>
+        
+        <a href="https://forms.gle/Nsdrd59q6epJF7zs5" target="_blank" class="action-btn feedback-btn">📝 ประเมินระบบ</a>
+    </div>
+
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ℹ️ คู่มือการใช้งาน Tap Ma Basin Hub</h2>
+                <button id="close-help" class="close-modal-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>ยินดีต้อนรับสู่ศูนย์เฝ้าระวังลุ่มน้ำทับมา คุณสามารถคลิกที่ไอคอนหกเหลี่ยมเพื่อดูข้อมูลแบบ Real-time ได้ดังนี้:</p>
+                <ul class="help-list">
+                    <li><strong>🌧️ RADAR (เรดาร์ฝน):</strong> ดูทิศทางกลุ่มฝนที่กำลังเคลื่อนตัวผ่านระยอง เพื่อคาดการณ์ฝนตก</li>
+                    <li><strong>🌊 WATER (ระดับน้ำ):</strong> ดูระดับน้ำในคลองทับมา (Z.38) จากกรมชลประทาน ถ้าระดับน้ำใกล้ 2.50 ม. คือจุดวิกฤต</li>
+                    <li><strong>💨 PM 2.5 (คุณภาพอากาศ):</strong> เช็คค่าฝุ่นละอองในพื้นที่ สีแดง/ม่วง ควรงดกิจกรรมกลางแจ้ง</li>
+                    <li><strong>🌤️ FORECAST (พยากรณ์อากาศ):</strong> ดูแนวโน้มสภาพอากาศล่วงหน้าจาก YR.no</li>
+                    <li><strong>📹 CCTV (กล้องวงจรปิด):</strong> ดูสภาพน้ำท่วมและการจราจรบนถนนสายหลักแบบถ่ายทอดสด (กดปุ่ม ★ เพื่อปักหมุดกล้อง)</li>
+                    <li><strong>📉 TIDES (ระดับน้ำทะเล):</strong> ดูตารางน้ำขึ้น-น้ำลง เพราะช่วงน้ำทะเลหนุนจะทำให้คลองทับมาระบายน้ำได้ช้าลง</li>
+                </ul>
+                <div class="emergency-contact">
+                    <strong>☎️ แจ้งเหตุฉุกเฉิน/น้ำท่วม:</strong> ปภ.ระยอง โทร 038-694-135 หรือ สายด่วน 1784
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

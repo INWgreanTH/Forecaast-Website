@@ -176,3 +176,195 @@ iframe { width: 100%; height: 65vh; border-radius: 8px; border: none; background
         display: none; 
     } 
 }
+CSS
+/* --- ส่วนของปุ่ม Favorite (ดาว) --- */
+.fav-star {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 20;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1.4rem;
+    cursor: pointer;
+    text-shadow: 0 0 10px rgba(0,0,0,0.9);
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    user-select: none;
+}
+
+.fav-star:hover {
+    transform: scale(1.2);
+    color: #fff;
+}
+
+/* เมื่อช่องถูกกด Favorite */
+.cctv-player-wrap.is-fav {
+    order: -1; /* สั่งให้เด้งไปอยู่ก่อนหน้าช่องอื่นๆ ใน Grid */
+    border: 2px solid #ffcc00; /* เพิ่มขอบสีทองให้เด่น */
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+}
+
+.cctv-player-wrap.is-fav .fav-star {
+    color: #ffcc00; /* เปลี่ยนดาวเป็นสีทอง */
+    transform: scale(1.1);
+}
+/* ==========================================================
+   Bottom Right Actions & Help Modal Styles
+   ========================================================== */
+.bottom-right-actions {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.action-btn {
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.feedback-btn {
+    background: var(--accent);
+    color: var(--bg-dark);
+    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+}
+
+.help-btn {
+    background: #2a3441;
+    color: #e8f4ff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.action-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+}
+
+.feedback-btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.6);
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.help-btn:hover {
+    background: #3b4859;
+}
+
+/* ซ่อนปุ่มเมื่อเปิด Panel */
+@media (max-width: 768px) { 
+    .app.panel-open ~ .bottom-right-actions { display: none; } 
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: #111a24;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
+    transform: translateY(20px);
+    transition: 0.3s ease;
+    overflow: hidden;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    background: #0a0f16;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 { font-size: 1.1rem; color: var(--accent); margin: 0; }
+.close-modal-btn { background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
+.close-modal-btn:hover { color: #ff4444; }
+
+.modal-body { padding: 20px; font-size: 0.9rem; line-height: 1.6; color: #ccc; }
+.help-list { margin: 15px 0; padding-left: 20px; }
+.help-list li { margin-bottom: 10px; }
+.help-list strong { color: #fff; }
+.emergency-contact {
+    margin-top: 20px;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid #ff4444;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    color: #ff4444;
+}
+/* ==========================================================
+   Live Ticker (Dashboard Preview) Styles
+   ========================================================== */
+.live-ticker {
+    background: #0a0f16;
+    border-bottom: 1px solid var(--accent);
+    padding: 8px 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 50;
+    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.1);
+}
+
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.ticker-move {
+    display: inline-block;
+    white-space: nowrap;
+    padding-right: 100%;
+    animation: ticker 25s linear infinite;
+}
+
+.ticker-move:hover {
+    animation-play-state: paused; /* หยุดวิ่งเมื่อเอาเมาส์ชี้ */
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 30px;
+    font-size: 0.85rem;
+    color: #e8f4ff;
+    letter-spacing: 0.5px;
+}
+
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}

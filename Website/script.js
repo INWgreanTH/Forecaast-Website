@@ -83,7 +83,7 @@ const pages = {
                     ).join('')}
                 </div>
                 <div class="tide-viewer">
-                    <img id="current-tide-img" src="Jan.png" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
+                    <img id="current-tide-img" src="Jan.jpg" class="tide-img-fluid" onerror="this.src='https://via.placeholder.com/800x600?text=กำลังโหลดข้อมูล...'">
                 </div>
             </div>`
     }
@@ -159,34 +159,35 @@ function initCCTVGrid() {
         wrap.className = 'cctv-player-wrap';
         if (src.zoom) wrap.classList.add('cctv-zoom20');
 
+        // สร้างปุ่มดาว (Favorite)
+        const favStar = document.createElement('div');
+        favStar.className = 'fav-star';
+        favStar.innerHTML = '★';
+        favStar.onclick = (e) => {
+            e.stopPropagation(); // กันไม่ให้ไปโดน Event อื่นๆ ของตัวเล่น
+            wrap.classList.toggle('is-fav');
+        };
+        wrap.appendChild(favStar);
+
         if (src.url.includes('.m3u8')) {
             const video = document.createElement('video');
-            // บังคับ Mute และ Autoplay เพื่อให้เบราว์เซอร์อนุญาตให้เล่น
             video.muted = true;
             video.playsInline = true;
             video.autoplay = true;
             video.setAttribute('autoplay', '');
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
-            
-            // เปิดให้ผู้ใช้กด Control (ขยายจอ) ได้
             video.controls = true; 
             
             if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // สำหรับ Safari / iOS
                 video.src = src.url;
-                video.addEventListener('loadedmetadata', () => {
-                    video.play().catch(e => console.log("Native Autoplay prevented:", e));
-                });
+                video.play().catch(e => console.log("Play error:", e));
             } else if (window.Hls && Hls.isSupported()) {
-                // สำหรับ Chrome / Edge / Firefox
                 const hls = new Hls({ maxBufferLength: 10, liveSyncDurationCount: 3 });
                 hls.loadSource(src.url);
                 hls.attachMedia(video);
-                
-                // บังคับ Play ทันทีเมื่อ HLS จัดเตรียมไฟล์เสร็จ
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play().catch(e => console.log("HLS Autoplay prevented:", e));
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play().catch(e => console.log("HLS Play error:", e));
                 });
             }
             wrap.appendChild(video);
@@ -234,3 +235,24 @@ closeBtn.onclick = () => {
     app.classList.remove('panel-open');
     setTimeout(() => { panelContent.innerHTML = ''; }, 600);
 };
+// --- 6. Help Modal Logic ---
+const helpBtn = document.getElementById('help-btn');
+const helpModal = document.getElementById('help-modal');
+const closeHelpBtn = document.getElementById('close-help');
+
+if (helpBtn && helpModal && closeHelpBtn) {
+    helpBtn.addEventListener('click', () => {
+        helpModal.classList.add('active');
+    });
+
+    closeHelpBtn.addEventListener('click', () => {
+        helpModal.classList.remove('active');
+    });
+
+    // ปิดเมื่อคลิกพื้นที่ว่างนอกกล่อง
+    helpModal.addEventListener('click', (e) => {
+        if (e.target === helpModal) {
+            helpModal.classList.remove('active');
+        }
+    });
+}
