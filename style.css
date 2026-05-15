@@ -1,370 +1,413 @@
+/* ============================================================
+   Tap Ma Basin Hub — style.css
+   ============================================================ */
+
 :root {
     --hex-start-size: 550px;
-    --accent: #00d2ff;
-    --bg-dark: #05080c;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --water-green: #52b788;
-    --water-orange: #d4a373;
+    --accent:         #00d2ff;
+    --accent-dim:     rgba(0, 210, 255, 0.15);
+    --bg-dark:        #05080c;
+    --bg-panel:       #0d141d;
+    --bg-card:        rgba(255, 255, 255, 0.03);
+    --border-color:   rgba(255, 255, 255, 0.1);
+    --water-green:    #52b788;
+    --water-orange:   #d4a373;
+    --ticker-h:       42px;
+    --panel-w:        75vw;
+    /* FIX: single source of truth for panel padding-top — used by sticky header */
+    --panel-pad:      28px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-body { background: var(--bg-dark); color: #e8f4ff; overflow: hidden; }
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-dark);
+    color: #e8f4ff;
+    padding-top: var(--ticker-h);
+}
 
-/* Top Bar */
-.top-bar { height: 60px; background: #0a0f16; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 30px; position: relative; z-index: 1000; }
-.status-dot { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; margin-right: 12px; box-shadow: 0 0 15px #00ff88; animation: pulse 2s infinite; }
-@keyframes pulse { 0% { transform: scale(0.95); opacity: 0.7; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.7; } }
-.logo { font-weight: 600; font-size: 0.85rem; letter-spacing: 2px; color: #7f95ad; text-transform: uppercase; }
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes pulse {
+    0%, 100% { transform: scale(0.95); opacity: 0.7; }
+    50%       { transform: scale(1.05); opacity: 1;   }
+}
+@keyframes tickerLoop {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
 
-/* Hub Layout */
-.app { display: flex; justify-content: center; align-items: center; height: calc(100vh - 60px); position: relative; transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
-.hex-hub { width: var(--hex-start-size); position: relative; z-index: 10; transition: 0.8s; }
+/* ============================================================
+   Live Ticker
+   ============================================================ */
+.live-ticker {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 600;
+    height: var(--ticker-h);
+    background: #0a0f16;
+    border-bottom: 1px solid var(--accent);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 210, 255, 0.12);
+    display: flex;
+    align-items: center;
+}
+.ticker-wrap { flex: 1; overflow: hidden; white-space: nowrap; min-width: 0; }
+.ticker-move {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: tickerLoop 60s linear infinite;
+    will-change: transform;
+}
+.ticker-move:hover { animation-play-state: paused; }
+.ticker-item {
+    display: inline-block;
+    padding: 0 28px;
+    font-size: 0.82rem;
+    color: #e8f4ff;
+    letter-spacing: 0.4px;
+    line-height: 1;
+}
+.ticker-sep {
+    color: var(--accent);
+    opacity: 0.4;
+    padding: 0 4px;
+    font-size: 0.6rem;
+}
+.ticker-timestamp {
+    flex-shrink: 0;
+    padding: 0 12px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    color: rgba(0, 210, 255, 0.55);
+    letter-spacing: 1px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    line-height: var(--ticker-h);
+    white-space: nowrap;
+}
 
-/* ตำแหน่ง Middle-Right Under Hexagon */
+/* ============================================================
+   App shell
+   ============================================================ */
+.app {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - var(--ticker-h));
+    position: relative;
+    transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+
+/* ============================================================
+   Hex Hub
+   ============================================================ */
+.hex-hub {
+    width: var(--hex-start-size);
+    max-width: 90vw;
+    position: relative;
+    z-index: 10;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s;
+}
 .hover-label {
     position: absolute;
-    bottom: -10px;
-    right: 160px; /* เยื้องมาทางขวาเพื่อให้กึ่งกลางคำอยู่ใต้ซีกขวาของ Hexagon */
-    font-size: 0.9rem;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
     font-weight: 800;
     letter-spacing: 3px;
     color: var(--accent);
     text-transform: uppercase;
     pointer-events: none;
-    opacity: 0.7;
-    transition: 0.3s ease;
-}
-
-/* SVG Polygons */
-.hex-face { opacity: 0.7; cursor: pointer; transition: 0.4s; stroke: var(--accent); stroke-width: 0.5; }
-.hex-group:hover .hex-face { opacity: 1; filter: brightness(1.1) drop-shadow(0 0 15px var(--accent)); }
-.hex-icon-label { fill: white; font-size: 10px; font-weight: 800; text-anchor: middle; pointer-events: none; text-shadow: 0 2px 5px black; }
-
-/* Panel Logic */
-.panel { position: fixed; top: 0; right: 0; width: 75vw; height: 100vh; background: #0d141d; transform: translateX(100%); transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); padding: 80px 40px; overflow-y: auto; z-index: 500; border-left: 2px solid var(--accent); }
-.panel.open { transform: translateX(0); }
-.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-.close-btn { background: #cc3333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-.app.panel-open .hex-hub { transform: translateX(-35vw) scale(0.35); opacity: 0.3; }
-
-/* Content Elements */
-.card { background: rgba(255,255,255,0.03); padding: 25px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); }
-iframe { width: 100%; height: 65vh; border-radius: 8px; border: none; background: white; }
-
-/* Radar & Tables */
-.radar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.radar-zoom-wrap { aspect-ratio: 1/1; overflow: hidden; border-radius: 8px; border: 1px solid #333; }
-.radar-zoom-wrap img { width: 100%; height: 100%; object-fit: cover; }
-.radar-btn { background: #222; color: #fff; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; cursor: pointer; margin-right: 5px; }
-.radar-btn.active { background: var(--accent); border-color: var(--accent); }
-
-.water-main-table { width: 100%; border-collapse: collapse; background: #111; font-size: 0.85rem; }
-.water-main-table th { background: #1a1a1a; padding: 10px; border: 1px solid #333; }
-.water-main-table td { padding: 8px; border: 1px solid #222; text-align: center; }
-.val-wl { color: var(--water-green); font-weight: bold; }
-.val-q { color: var(--water-orange); }
-
-.tide-grid-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
-.tide-btn { padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px; border: none; }
-.counter-footer {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 9999; 
-    opacity: 0.6;  
-    transition: opacity 0.3s ease;
-}
-
-.counter-footer:hover {
-    opacity: 1;    
-}
-
-/* ==========================================================
-   CCTV Grid Styles (เพิ่มใหม่)
-   ========================================================== */
-.cctv-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.cctv-player-wrap {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    overflow: hidden;
-    border-radius: 8px;
-    border: 1px solid #333;
-}
-
-.cctv-player-wrap video, 
-.cctv-player-wrap iframe, 
-.cctv-player-wrap img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    border: none;
-    object-fit: cover;
-}
-
-.cctv-zoom20 iframe {
-    transform: scale(1.2);
-    transform-origin: center center;
-    position: absolute;
-    top: 8%;
-    bottom: -0%;
-    left: 0%;
-    right: 0%;
-}
-
-.cctv-label {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: #ffffff;
-    font-size: 0.75rem;
-    padding: 3px 10px;
-    border-radius: 4px;
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
     white-space: nowrap;
 }
+.hex-face {
+    opacity: 0.72;
+    cursor: pointer;
+    transition: opacity 0.35s, filter 0.35s;
+    stroke: var(--accent);
+    stroke-width: 0.5;
+}
+.hex-group:hover .hex-face,
+.hex-group:focus .hex-face {
+    opacity: 1;
+    filter: brightness(1.1) drop-shadow(0 0 14px var(--accent));
+}
+.hex-group:focus { outline: none; }
+.hex-group:focus .hex-face { stroke: #fff; stroke-width: 1.5; }
+.hex-icon-label {
+    fill: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    text-anchor: middle;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: rgba(0,0,0,0.6);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
 
-/* Responsive ของส่วนหน้าจอ CCTV */
-@media (max-width: 1200px) {
+/* ============================================================
+   Side Panel
+   ============================================================ */
+.panel {
+    position: fixed;
+    top: var(--ticker-h);
+    right: 0;
+    width: var(--panel-w);
+    height: calc(100vh - var(--ticker-h));
+    background: var(--bg-panel);
+    transform: translateX(100%);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: var(--panel-pad) 36px;
+    overflow-y: auto;
+    z-index: 500;
+    border-left: 2px solid var(--accent);
+    scroll-behavior: smooth;
+}
+.panel.open { transform: translateX(0); }
+
+/* FIX: sticky top uses --panel-pad so it always matches, even on mobile */
+.panel-header {
+    position: sticky;
+    top: calc(var(--panel-pad) * -1);
+    z-index: 10;
+    background: var(--bg-panel);
+    padding: 16px 0 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+.panel-header h2 { font-size: 1.05rem; font-weight: 700; color: #e8f4ff; }
+
+.close-btn {
+    background: #cc3333;
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.82rem;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.close-btn:hover { background: #ff4444; }
+.close-btn:focus { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* FIX: these classes are toggled by JS — must exist in CSS */
+.app.panel-open .hex-hub { transform: translateX(-35vw) scale(0.35); opacity: 0.25; }
+body.panel-is-open .counter-footer,
+body.panel-is-open .bottom-right-actions { display: none; }
+
+/* ============================================================
+   Cards & iframes
+   ============================================================ */
+.card {
+    background: var(--bg-card);
+    padding: 22px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border-color);
+}
+iframe {
+    width: 100%;
+    height: 65vh;
+    border-radius: 8px;
+    border: none;
+    background: white;
+    display: block;
+}
+
+/* ============================================================
+   Radar
+   ============================================================ */
+.radar-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.radar-note    { text-align: center; margin-top: 10px; font-size: 0.78rem; color: #555; }
+.radar-grid    { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.radar-zoom-wrap {
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
+    background: #0a0a0a;
+}
+.radar-zoom-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; display: block; }
+.radar-zoom-wrap:hover img { transform: scale(1.04); }
+.focus-east img        { transform: scale(1.4) translateY(-8%); transform-origin: center 40%; }
+.focus-east:hover img  { transform: scale(1.44) translateY(-8%); }
+
+.radar-btn {
+    background: #1c1c1c; color: #ccc; border: 1px solid #3a3a3a;
+    padding: 7px 14px; border-radius: 20px; cursor: pointer; font-size: 0.82rem;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.radar-btn:hover  { background: #2a2a2a; color: #fff; }
+.radar-btn:focus  { outline: 2px solid var(--accent); outline-offset: 2px; }
+.radar-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 700; }
+
+/* ============================================================
+   Tides
+   ============================================================ */
+.tide-grid-container { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 18px; }
+.tide-btn {
+    padding: 9px 6px; cursor: pointer; font-weight: 700; font-size: 0.82rem;
+    border-radius: 6px; border: 1px solid #3a3a3a; background: #161e2a; color: #aac;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.tide-btn:hover  { background: #1e2d40; border-color: var(--accent); color: #fff; }
+.tide-btn:focus  { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tide-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+.tide-img-fluid  { width: 100%; height: auto; display: block; border-radius: 8px; transition: opacity 0.2s ease; }
+.tide-viewer     { margin-top: 8px; }
+
+/* ============================================================
+   CCTV
+   ============================================================ */
+.cctv-header {
+    background: #1a1a1a; padding: 11px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px; border-radius: 8px;
+}
+.cctv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cctv-player-wrap {
+    position: relative; aspect-ratio: 16/9; background: #050505;
+    overflow: hidden; border-radius: 8px; border: 1px solid #2a2a2a;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cctv-player-wrap:hover { border-color: #444; }
+.cctv-player-wrap video, .cctv-player-wrap iframe, .cctv-player-wrap img {
+    width: 100%; height: 100%; display: block; border: none; object-fit: cover;
+}
+.cctv-zoom20 iframe {
+    transform: scale(1.2); transform-origin: center center;
+    position: absolute; top: 8%; left: 0; right: 0;
+}
+.cctv-label {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.75); color: #ddd; font-size: 0.72rem;
+    padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+    pointer-events: none; backdrop-filter: blur(4px);
+}
+.cctv-offline {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: #080808; color: #888; font-size: 0.82rem; letter-spacing: 0.5px;
+}
+.fav-star {
+    position: absolute; top: 8px; right: 8px; z-index: 20;
+    color: rgba(255,255,255,0.3); font-size: 1.3rem; line-height: 1; cursor: pointer;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.9); user-select: none;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s;
+}
+.fav-star:hover  { transform: scale(1.25); color: #fff; }
+.fav-star:focus  { outline: 2px solid #ffcc00; outline-offset: 2px; border-radius: 2px; }
+.cctv-player-wrap.is-fav { border: 2px solid #ffcc00; box-shadow: 0 0 14px rgba(255,204,0,0.25); }
+.cctv-player-wrap.is-fav .fav-star { color: #ffcc00; transform: scale(1.1); }
+
+/* ============================================================
+   Counter
+   ============================================================ */
+.counter-footer { position: fixed; bottom: 18px; left: 18px; z-index: 9999; opacity: 0.5; transition: opacity 0.3s; }
+.counter-footer:hover { opacity: 1; }
+
+/* ============================================================
+   Bottom-right actions
+   ============================================================ */
+.bottom-right-actions {
+    position: fixed; bottom: 18px; right: 18px;
+    z-index: 9999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
+}
+.action-btn {
+    padding: 10px 20px; border-radius: 30px; text-decoration: none;
+    font-weight: 800; font-size: 0.82rem; cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s, background 0.25s, color 0.25s;
+    border: 2px solid transparent;
+}
+.action-btn:focus { outline: 2px solid #fff; outline-offset: 3px; }
+
+.feedback-btn {
+    background: var(--accent); color: var(--bg-dark);
+    box-shadow: 0 4px 14px rgba(0,210,255,0.3);
+}
+.feedback-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 6px 20px rgba(0,210,255,0.55);
+    background: transparent; color: var(--accent); border-color: var(--accent);
+}
+.help-btn { background: #23303f; color: #c8daea; box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+.help-btn:hover { transform: translateY(-3px) scale(1.04); background: #2e3f52; }
+
+.dashboard-btn {
+    background: #9d4edd; color: #fff;
+    box-shadow: 0 4px 14px rgba(157, 78, 221, 0.4);
+}
+.dashboard-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 6px 20px rgba(157, 78, 221, 0.6);
+    background: transparent; color: #9d4edd; border-color: #9d4edd;
+}
+
+/* ============================================================
+   Help Modal
+   ============================================================ */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.78); backdrop-filter: blur(6px);
+    z-index: 10000; display: flex; justify-content: center; align-items: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-content {
+    background: #111a24; width: 92%; max-width: 580px;
+    border-radius: 14px; border: 1px solid var(--accent);
+    box-shadow: 0 0 28px rgba(0,210,255,0.18);
+    transform: translateY(18px); transition: transform 0.25s; overflow: hidden;
+}
+.modal-overlay.active .modal-content { transform: translateY(0); }
+.modal-header {
+    background: #0a0f16; padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.modal-header h2   { font-size: 1rem; color: var(--accent); margin: 0; }
+.close-modal-btn   { background: transparent; border: none; color: #aaa; font-size: 1.2rem; cursor: pointer; transition: color 0.2s; }
+.close-modal-btn:hover { color: #ff4444; }
+.close-modal-btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.modal-body        { padding: 20px; font-size: 0.88rem; line-height: 1.65; color: #bbb; }
+.help-list         { margin: 14px 0; padding-left: 18px; }
+.help-list li      { margin-bottom: 9px; }
+.help-list strong  { color: #e8f4ff; }
+.emergency-contact {
+    margin-top: 18px; background: rgba(255,68,68,0.08);
+    border: 1px solid rgba(255,68,68,0.5); padding: 13px;
+    border-radius: 8px; text-align: center; color: #ff6b6b; font-size: 0.88rem;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 900px) {
+    :root { --panel-w: 88vw; }
     .cctv-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
+    /* FIX: update --panel-pad for mobile so sticky header stays correct */
+    :root { --hex-start-size: 88vw; --panel-w: 100vw; --panel-pad: 16px; }
+    .panel { padding: var(--panel-pad) 16px; }
+    .app.panel-open .hex-hub { transform: translateX(-50vw) scale(0.22); opacity: 0.18; }
     .cctv-grid { grid-template-columns: 1fr; }
-    
-    .app.panel-open ~ .counter-footer {
-        display: none;
-    }
-}
-/* ==========================================================
-   Feedback Button Styles (Bottom Right)
-   ========================================================== */
-.feedback-footer {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-    background: var(--accent);
-    color: var(--bg-dark);
-    padding: 10px 20px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 0.85rem;
-    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
-    transition: all 0.3s ease;
-    border: 2px solid var(--accent);
+    .tide-grid-container { grid-template-columns: repeat(4, 1fr); }
+    .radar-grid { grid-template-columns: 1fr; }
+    .hover-label { left: 50%; transform: translateX(-50%); }
 }
 
-.feedback-footer:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.6);
-    background: transparent;
-    color: var(--accent);
-}
-
-/* ซ่อนปุ่มประเมินเมื่อเปิด Panel เพื่อไม่ให้บังเนื้อหาในมือถือ */
-@media (max-width: 768px) { 
-    .app.panel-open ~ .feedback-footer { 
-        display: none; 
-    } 
-}
-CSS
-/* --- ส่วนของปุ่ม Favorite (ดาว) --- */
-.fav-star {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 20;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1.4rem;
-    cursor: pointer;
-    text-shadow: 0 0 10px rgba(0,0,0,0.9);
-    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    user-select: none;
-}
-
-.fav-star:hover {
-    transform: scale(1.2);
-    color: #fff;
-}
-
-/* เมื่อช่องถูกกด Favorite */
-.cctv-player-wrap.is-fav {
-    order: -1; /* สั่งให้เด้งไปอยู่ก่อนหน้าช่องอื่นๆ ใน Grid */
-    border: 2px solid #ffcc00; /* เพิ่มขอบสีทองให้เด่น */
-    box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
-}
-
-.cctv-player-wrap.is-fav .fav-star {
-    color: #ffcc00; /* เปลี่ยนดาวเป็นสีทอง */
-    transform: scale(1.1);
-}
-/* ==========================================================
-   Bottom Right Actions & Help Modal Styles
-   ========================================================== */
-.bottom-right-actions {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
-}
-
-.action-btn {
-    padding: 10px 20px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-
-.feedback-btn {
-    background: var(--accent);
-    color: var(--bg-dark);
-    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
-}
-
-.help-btn {
-    background: #2a3441;
-    color: #e8f4ff;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-}
-
-.action-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-}
-
-.feedback-btn:hover {
-    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.6);
-    background: transparent;
-    color: var(--accent);
-    border-color: var(--accent);
-}
-
-.help-btn:hover {
-    background: #3b4859;
-}
-
-/* ซ่อนปุ่มเมื่อเปิด Panel */
-@media (max-width: 768px) { 
-    .app.panel-open ~ .bottom-right-actions { display: none; } 
-}
-
-/* Modal Styles */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(5px);
-    z-index: 10000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: 0.3s ease;
-}
-
-.modal-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.modal-content {
-    background: #111a24;
-    width: 90%;
-    max-width: 600px;
-    border-radius: 12px;
-    border: 1px solid var(--accent);
-    box-shadow: 0 0 30px rgba(0, 210, 255, 0.2);
-    transform: translateY(20px);
-    transition: 0.3s ease;
-    overflow: hidden;
-}
-
-.modal-overlay.active .modal-content {
-    transform: translateY(0);
-}
-
-.modal-header {
-    background: #0a0f16;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.modal-header h2 { font-size: 1.1rem; color: var(--accent); margin: 0; }
-.close-modal-btn { background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; }
-.close-modal-btn:hover { color: #ff4444; }
-
-.modal-body { padding: 20px; font-size: 0.9rem; line-height: 1.6; color: #ccc; }
-.help-list { margin: 15px 0; padding-left: 20px; }
-.help-list li { margin-bottom: 10px; }
-.help-list strong { color: #fff; }
-.emergency-contact {
-    margin-top: 20px;
-    background: rgba(255, 68, 68, 0.1);
-    border: 1px solid #ff4444;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-    color: #ff4444;
-}
-/* ==========================================================
-   Live Ticker (Dashboard Preview) Styles
-   ========================================================== */
-.live-ticker {
-    background: #0a0f16;
-    border-bottom: 1px solid var(--accent);
-    padding: 8px 0;
-    overflow: hidden;
-    position: relative;
-    z-index: 50;
-    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.1);
-}
-
-.ticker-wrap {
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.ticker-move {
-    display: inline-block;
-    white-space: nowrap;
-    padding-right: 100%;
-    animation: ticker 25s linear infinite;
-}
-
-.ticker-move:hover {
-    animation-play-state: paused; /* หยุดวิ่งเมื่อเอาเมาส์ชี้ */
-}
-
-.ticker-item {
-    display: inline-block;
-    padding: 0 30px;
-    font-size: 0.85rem;
-    color: #e8f4ff;
-    letter-spacing: 0.5px;
-}
-
-@keyframes ticker {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
+@media (max-width: 480px) {
+    .tide-grid-container { grid-template-columns: repeat(3, 1fr); }
+    .ticker-timestamp    { display: none; }
 }
