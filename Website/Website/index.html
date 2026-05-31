@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ศูนย์เฝ้าระวังลุ่มน้ำทับมา ระยอง — ติดตามระดับน้ำ เรดาร์ฝน และคุณภาพอากาศแบบ Real-time">
+    <meta property="og:title" content="Tap Ma Basin Hub | Rayong 2026">
+    <meta property="og:description" content="ศูนย์เฝ้าระวังลุ่มน้ำทับมา ระยอง — ติดตามระดับน้ำ เรดาร์ฝน และคุณภาพอากาศแบบ Real-time">
+    <meta property="og:type" content="website">
+    <title>Tap Ma Basin Hub | Rayong 2026</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- HLS.js pinned — unminified build avoids local .map 404s -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.js"></script>
+    <!-- Chart.js for dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- ── Live Ticker ─────────────────────────────────── -->
+    <div class="live-ticker" role="region" aria-label="ข้อมูลสดแถบวิ่ง" aria-live="polite" aria-atomic="false">
+        <div class="ticker-wrap">
+            <div class="ticker-move" id="ticker-move">
+                <span class="ticker-item" id="ticker-weather-1">🌧️ <strong style="color:#00d2ff;">สภาพอากาศ:</strong> กำลังเชื่อมต่อ...</span>
+                <span class="ticker-item ticker-sep" aria-hidden="true">◆</span>
+                <span class="ticker-item" id="ticker-pm25-1">💨 <strong style="color:#ffcc00;">PM 2.5:</strong> กำลังโหลด...</span>
+                <span class="ticker-item ticker-sep" aria-hidden="true">◆</span>
+                <span class="ticker-item" id="ticker-water-1">📊 <strong style="color:#00d2ff;">ระดับน้ำ Z.38:</strong> กดเมนู WATER เพื่อดูข้อมูลจาก RID</span>
+                <span class="ticker-item ticker-sep" aria-hidden="true">◆</span>
+                <!-- ชุดที่ 2 — สำเนาให้ loop ต่อเนื่อง -->
+                <span class="ticker-item" id="ticker-weather-2" aria-hidden="true">🌧️ <strong style="color:#00d2ff;">สภาพอากาศ:</strong> กำลังเชื่อมต่อ...</span>
+                <span class="ticker-item ticker-sep" aria-hidden="true">◆</span>
+                <span class="ticker-item" id="ticker-pm25-2" aria-hidden="true">💨 <strong style="color:#ffcc00;">PM 2.5:</strong> กำลังโหลด...</span>
+                <span class="ticker-item ticker-sep" aria-hidden="true">◆</span>
+                <span class="ticker-item" id="ticker-water-2" aria-hidden="true">📊 <strong style="color:#00d2ff;">ระดับน้ำ Z.38:</strong> กดเมนู WATER เพื่อดูข้อมูลจาก RID</span>
+                <span class="ticker-item ticker-sep" aria-hidden="true">◆</span>
+            </div>
+        </div>
+        <div class="ticker-timestamp" id="ticker-timestamp" title="อัปเดตล่าสุด">--:--</div>
+    </div>
+
+    <!-- ── Main App ────────────────────────────────────── -->
+    <main class="app" id="app">
+        <div class="hex-hub" id="hex-hub">
+            <svg viewBox="0 0 300 300" id="hex-svg"
+                 role="img" aria-label="เมนูหลัก เลือกหมวดข้อมูลที่ต้องการ">
+                <title>เมนูหลัก Tap Ma Basin Hub</title>
+                <defs>
+                    <pattern id="pat-radar"    patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/13866733/pexels-photo-13866733.jpeg" width="550" height="550" x="-230" y="-30" preserveAspectRatio="xMidYMid slice"/></pattern>
+                    <pattern id="pat-water"    patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/459451/pexels-photo-459451.jpeg"      width="300" height="300" preserveAspectRatio="xMidYMid slice"/></pattern>
+                    <pattern id="pat-forecast" patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/1118873/pexels-photo-1118873.jpeg"    width="300" height="300" preserveAspectRatio="xMidYMid slice"/></pattern>
+                    <pattern id="pat-tides"    patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/1784712/pexels-photo-1784712.jpeg"    width="300" height="300" preserveAspectRatio="xMidYMid slice"/></pattern>
+                    <pattern id="pat-cctv"     patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/17489158/pexels-photo-17489158.jpeg"  width="400" height="400" x="-50" y="-50" preserveAspectRatio="xMidYMid slice"/></pattern>
+                    <pattern id="pat-air"      patternUnits="userSpaceOnUse" width="300" height="300"><image href="https://images.pexels.com/photos/257775/pexels-photo-257775.jpeg"      width="300" height="300" preserveAspectRatio="xMidYMid slice"/></pattern>
+                </defs>
+
+                <g class="hex-group" data-page="rainRadar"      data-label="RADAR"    data-station="ryg"  role="button" tabindex="0" aria-label="เรดาร์ฝน">
+                    <polygon class="hex-face" points="150,20 40,85 150,150"    fill="url(#pat-radar)"/>
+                    <text x="95"  y="85"  class="hex-icon-label">RADAR</text>
+                </g>
+                <g class="hex-group" data-page="waterLevel"     data-label="WATER"    role="button" tabindex="0" aria-label="ระดับน้ำ">
+                    <polygon class="hex-face" points="150,20 260,85 150,150"   fill="url(#pat-water)"/>
+                    <text x="205" y="85"  class="hex-icon-label">WATER</text>
+                </g>
+                <g class="hex-group" data-page="rainForecast"   data-label="FORECAST" role="button" tabindex="0" aria-label="พยากรณ์อากาศ">
+                    <polygon class="hex-face" points="260,85 260,215 150,150"  fill="url(#pat-forecast)"/>
+                    <text x="210" y="155" class="hex-icon-label">FORECAST</text>
+                </g>
+                <g class="hex-group" data-page="seaTides"       data-label="TIDES"    role="button" tabindex="0" aria-label="ระดับน้ำทะเล">
+                    <polygon class="hex-face" points="260,215 150,280 150,150" fill="url(#pat-tides)"/>
+                    <text x="205" y="225" class="hex-icon-label">TIDES</text>
+                </g>
+                <g class="hex-group" data-page="cctvMonitor"    data-label="CCTV"     role="button" tabindex="0" aria-label="กล้องวงจรปิด">
+                    <polygon class="hex-face" points="150,280 40,215 150,150"  fill="url(#pat-cctv)"/>
+                    <text x="95"  y="225" class="hex-icon-label">CCTV</text>
+                </g>
+                <g class="hex-group" data-page="airQualityPM25" data-label="PM 2.5"   role="button" tabindex="0" aria-label="คุณภาพอากาศ PM 2.5">
+                    <polygon class="hex-face" points="40,215 40,85 150,150"    fill="url(#pat-air)"/>
+                    <text x="90"  y="155" class="hex-icon-label">PM 2.5</text>
+                </g>
+            </svg>
+            <div class="hover-label" id="hover-label" aria-hidden="true">SELECT A CATEGORY</div>
+        </div>
+
+        <!-- ── Side Panel ──────────────────────────────── -->
+        <aside class="panel" id="panel" role="complementary" aria-label="แผงข้อมูล">
+            <div class="panel-header">
+                <h2 id="panel-title">Data Source</h2>
+                <button class="close-btn" id="close" aria-label="ปิดแผงข้อมูล">✕ CLOSE</button>
+            </div>
+            <div id="panel-content"></div>
+        </aside>
+    </main>
+
+    <!-- ── Fixed UI ─────────────────────────────────────── -->
+    <div class="counter-footer">
+        <a href="https://www.hitwebcounter.com/" target="_blank" rel="noopener noreferrer">
+            <img src="https://hitwebcounter.com/counter/counter.php?page=21469933&style=0036&nbdigits=7&type=page&initCount=0"
+                 alt="Page visit counter" width="80" height="16">
+        </a>
+    </div>
+
+    <!-- FIX: single .bottom-right-actions — no duplicate IDs -->
+    <div class="bottom-right-actions">
+        <button id="dashboard-btn" class="action-btn dashboard-btn" aria-label="เปิดกราฟสรุปข้อมูล">📊 สรุปสถานการณ์</button>
+        <button id="help-btn"      class="action-btn help-btn"      aria-label="เปิดคู่มือการใช้งาน">ℹ️ วิธีใช้งาน</button>
+        <a href="https://forms.gle/Nsdrd59q6epJF7zs5" target="_blank" rel="noopener noreferrer"
+           class="action-btn feedback-btn">📝 ประเมินระบบ</a>
+    </div>
+
+    <!-- ── Help Modal ──────────────────────────────────── -->
+    <div id="help-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="help-modal-title">ℹ️ คู่มือการใช้งาน Tap Ma Basin Hub</h2>
+                <button id="close-help" class="close-modal-btn" aria-label="ปิดคู่มือ">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>ยินดีต้อนรับสู่ศูนย์เฝ้าระวังลุ่มน้ำทับมา คลิกที่ไอคอนหกเหลี่ยมเพื่อดูข้อมูลแบบ Real-time:</p>
+                <ul class="help-list">
+                    <li><strong>🌧️ RADAR:</strong> ดูทิศทางกลุ่มฝนที่กำลังเคลื่อนตัวผ่านระยอง</li>
+                    <li><strong>🌊 WATER:</strong> ระดับน้ำ Z.38 จากกรมชลประทาน — วิกฤตที่ 2.50 ม.</li>
+                    <li><strong>💨 PM 2.5:</strong> คุณภาพอากาศ — สีแดง/ม่วง ควรงดกิจกรรมกลางแจ้ง</li>
+                    <li><strong>🌤️ FORECAST:</strong> พยากรณ์อากาศล่วงหน้าจาก YR.no</li>
+                    <li><strong>📹 CCTV:</strong> กล้องถ่ายทอดสดถนนสายหลักและชายฝั่ง (★ ปักหมุดกล้องโปรด)</li>
+                    <li><strong>📉 TIDES:</strong> ตารางน้ำขึ้น-น้ำลง — น้ำทะเลหนุนทำให้คลองระบายช้า</li>
+                    <li><strong>📊 สรุปสถานการณ์:</strong> กราฟแสดงแนวโน้มสภาพอากาศและคุณภาพอากาศ</li>
+                </ul>
+                <div class="emergency-contact">
+                    <strong>☎️ แจ้งเหตุฉุกเฉิน/น้ำท่วม:</strong> ปภ.ระยอง 038-694-135 &nbsp;|&nbsp; สายด่วน 1784
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
