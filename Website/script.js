@@ -89,16 +89,25 @@ const pages = {
         title: "ระดับน้ำทะเล (ปากน้ำระยอง) ปี 2569",
         content: `
             <div class="card">
-                <div class="tide-grid-container">
-                    ${MONTHS.map((m, i) =>
-                        `<button class="tide-btn${i === currentMonthIdx ? ' active' : ''}"
-                                 onclick="selectTide(this,'${m.u}')">${m.n}</button>`
-                    ).join('')}
+                <div class="tide-view-toggle">
+                    <button class="tide-view-btn active" onclick="switchTideView('table',this)">📋 ตารางน้ำ</button>
+                    <button class="tide-view-btn" onclick="switchTideView('chart',this)">📈 กราฟพยากรณ์</button>
                 </div>
-                <div class="tide-viewer">
-                    <img id="current-tide-img" src="${MONTHS[currentMonthIdx].u}" class="tide-img-fluid"
-                         alt="ตารางน้ำขึ้นน้ำลงเดือน${MONTHS[currentMonthIdx].n}"
-                         onerror="this.src='https://placehold.co/800x600/111a24/555?text=ไม่พบไฟล์รูปภาพ'">
+                <div id="tide-table-view">
+                    <div class="tide-grid-container">
+                        ${MONTHS.map((m, i) =>
+                            `<button class="tide-btn${i === currentMonthIdx ? ' active' : ''}"
+                                     onclick="selectTide(this,'${m.u}')">${m.n}</button>`
+                        ).join('')}
+                    </div>
+                    <div class="tide-viewer">
+                        <img id="current-tide-img" src="${MONTHS[currentMonthIdx].u}" class="tide-img-fluid"
+                             alt="ตารางน้ำขึ้นน้ำลงเดือน${MONTHS[currentMonthIdx].n}"
+                             onerror="this.src='https://placehold.co/800x600/111a24/555?text=ไม่พบไฟล์รูปภาพ'">
+                    </div>
+                </div>
+                <div id="tide-chart-view" style="display:none;">
+                    <iframe src="tides-forecast.html" style="width:100%;height:70vh;border:none;border-radius:8px;background:#080808;" loading="lazy"></iframe>
                 </div>
             </div>`
     },
@@ -200,6 +209,21 @@ window.selectTide = (btn, filename) => {
         img.alt = `ตารางน้ำขึ้นน้ำลง ${filename}`;
         img.style.opacity = '1';
     }, 200);
+};
+
+window.switchTideView = (view, btn) => {
+    document.querySelectorAll('.tide-view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tableView = document.getElementById('tide-table-view');
+    const chartView = document.getElementById('tide-chart-view');
+    if (!tableView || !chartView) return;
+    if (view === 'chart') {
+        tableView.style.display = 'none';
+        chartView.style.display = 'block';
+    } else {
+        chartView.style.display = 'none';
+        tableView.style.display = 'block';
+    }
 };
 
 // ============================================================
