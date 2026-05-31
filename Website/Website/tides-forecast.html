@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>พยากรณ์น้ำขึ้น-น้ำลง ปากน้ำระยอง</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #080808;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 12px 14px 16px;
+}
+.header { text-align: center; margin-bottom: 12px; }
+.header h2 { font-size: 0.92rem; color: #00d2ff; font-weight: 700; }
+.header p  { font-size: 0.63rem; color: #363636; margin-top: 2px; }
+.tabs {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 14px;
+}
+.tab {
+  padding: 6px 18px; border: 1px solid #222; border-radius: 20px;
+  background: #0e0e0e; color: #555; font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+}
+.tab:hover  { border-color: #00d2ff; color: #00d2ff; }
+.tab.active { background: rgba(0,210,255,.1); border-color: #00d2ff; color: #00d2ff; }
+.chart-wrap { position: relative; width: 100%; }
+canvas { width: 100% !important; display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>🌊 พยากรณ์น้ำขึ้น-น้ำลง — ปากน้ำระยอง (ปี 2569)</h2>
+  <p>ที่มา: กรมอุทกศาสตร์ กองทัพเรือ | ค่ารายชั่วโมงจากตารางจริง (เมตร เหนือระดับน้ำลงต่ำสุด)</p>
+</div>
+
+<div class="tabs">
+  <button class="tab" onclick="setDays(3,this)">3 วัน</button>
+  <button class="tab active" onclick="setDays(5,this)">5 วัน</button>
+  <button class="tab" onclick="setDays(7,this)">7 วัน</button>
+  <button class="tab" onclick="setDays(14,this)">14 วัน</button>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="chart"></canvas>
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────
+const MONTHS_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const DAYS_IN   = [31,28,31,30,31,30,31,31,30,31,30,31];
+const DAY_TH    = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+const JAN1_DOW  = 4; // Jan 1 2026 = Thursday
+
+function flatInfo(flat) {
+  let rem = flat, m = 0;
+  while (rem >= DAYS_IN[m]) { rem -= DAYS_IN[m]; m++; }
+  return {
+    label: `${rem + 1} ${MONTHS_TH[m]}`,
+    dow: DAY_TH[(JAN1_DOW + flat) % 7],
+  };
+}
+
+// ── Hourly tide data — read directly from Royal Thai Navy 2026 table ──
+// Each array = 24 hourly water-level values (meters), hours 00:00–23:00
+// Flat index 150 = May 31, 2026
+
+const HOURLY = {
+  // May 31  — HIGH 2.3m @ ~21:00, LOW 0.5m @ ~09:00
+  150: [2.0,2.0,1.9,1.7,1.5,1.3,1.1,0.8,0.6,0.5,0.5,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.1,2.2,2.3,2.3,2.2],
+  // Jun 1   — HIGH 2.3m @ ~19:00, LOW 0.7m @ ~08:00
+  151: [2.2,2.1,2.0,1.8,1.6,1.4,1.2,0.9,0.7,0.7,0.8,1.0,1.2,1.4,1.6,1.7,1.9,2.0,2.2,2.3,2.3,2.3,2.3,2.2],
+  // Jun 2   — HIGH 2.3m @ ~20:00, LOW 0.8m @ ~08:00
+  152: [2.2,2.2,2.1,1.9,1.7,1.5,1.3,1.0,0.8,0.8,0.9,1.1,1.3,1.5,1.6,1.7,1.8,1.9,2.1,2.2,2.3,2.3,2.3,2.2],
+  // Jun 3   — HIGH 2.3m @ ~20:00, LOW 0.8m @ ~09:00
+  153: [2.2,2.2,2.2,2.0,1.8,1.6,1.4,1.1,0.9,0.8,0.9,1.1,1.3,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.3,2.3,2.3,2.2],
+  // Jun 4   — HIGH 2.3m @ ~21:00, LOW 0.8m @ ~09:00
+  154: [2.2,2.2,2.2,2.2,2.0,1.8,1.5,1.3,1.1,0.9,0.8,0.9,1.1,1.3,1.5,1.6,1.7,1.8,2.0,2.1,2.2,2.3,2.3,2.2],
+  // Jun 5   — HIGH 2.3m @ ~21:00, LOW 0.9m @ ~09:00
+  155: [2.2,2.2,2.2,2.2,2.2,2.0,1.7,1.5,1.2,1.0,0.9,1.0,1.2,1.4,1.5,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.3,2.2],
+  // Jun 6   — HIGH 2.3m @ ~20:00, LOW 1.4m @ ~10:00  (neap — small range)
+  156: [2.2,2.2,2.2,2.2,2.2,2.1,2.0,1.8,1.6,1.5,1.4,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.2,2.2,2.2],
+  // Jun 7   — HIGH 2.2m @ ~20:00, LOW 1.4m @ ~11:00
+  157: [2.2,2.2,2.2,2.2,2.2,2.1,2.0,1.9,1.8,1.6,1.5,1.4,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.2,2.2,2.2],
+  // Jun 8   — HIGH 2.2m, LOW 1.2m @ ~11:00
+  158: [2.2,2.2,2.2,2.2,2.2,2.1,2.0,1.9,1.7,1.5,1.3,1.2,1.2,1.3,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.2,2.2],
+  // Jun 9   — HIGH 2.2m, LOW 1.0m @ ~11:00
+  159: [2.2,2.2,2.2,2.2,2.1,2.0,1.9,1.8,1.6,1.4,1.2,1.0,1.0,1.1,1.3,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.2],
+  // Jun 10  — HIGH 2.4m @ ~23:00, LOW 0.9m @ ~11:00
+  160: [2.3,2.2,2.2,2.1,2.0,1.9,1.8,1.6,1.4,1.2,1.0,0.9,0.9,1.0,1.2,1.4,1.5,1.6,1.7,1.9,2.1,2.2,2.3,2.4],
+  // Jun 11  — HIGH 2.5m @ ~23:00, LOW 0.8m @ ~11:00
+  161: [2.4,2.4,2.3,2.2,2.1,2.0,1.8,1.6,1.4,1.2,1.0,0.8,0.8,0.9,1.1,1.3,1.4,1.5,1.7,1.9,2.1,2.2,2.4,2.5],
+  // Jun 12  — HIGH 2.5m @ 00:00 & 23:00, LOW 0.7m @ ~11:00
+  162: [2.5,2.5,2.4,2.3,2.1,2.0,1.8,1.5,1.3,1.1,0.9,0.7,0.7,0.8,1.0,1.2,1.3,1.5,1.7,1.9,2.1,2.3,2.4,2.5],
+  // Jun 13  — HIGH 2.5m @ 00:00 & 23:00, LOW 0.7m @ ~11:00
+  163: [2.5,2.5,2.4,2.3,2.2,2.0,1.8,1.6,1.3,1.1,0.9,0.7,0.7,0.8,1.0,1.2,1.3,1.5,1.7,1.9,2.1,2.3,2.4,2.5],
+};
+
+const TODAY_FLAT = 150; // May 31, 2026
+
+// ── Plugins ──────────────────────────────────────────────────────
+// Day separator: faint vertical at midnight of each new day
+const daySepPlugin = {
+  id: 'daySep',
+  afterDraw(chart) {
+    if (!chart._numDays) return;
+    const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    for (let d = 1; d < chart._numDays; d++) {
+      const xp = x.getPixelForValue(d * 24);
+      ctx.beginPath(); ctx.moveTo(xp, top); ctx.lineTo(xp, bottom); ctx.stroke();
+    }
+    ctx.restore();
+  }
+};
+
+// Peak dot + value label at each daily HIGH and LOW
+const peakPlugin = {
+  id: 'peakLabels',
+  afterDatasetsDraw(chart) {
+    if (!chart._peaks) return;
+    const { ctx, scales: { y } } = chart;
+    const meta = chart.getDatasetMeta(0);
+    ctx.save();
+    chart._peaks.forEach(({ idx, isHigh }) => {
+      const pt  = meta.data[idx];
+      if (!pt) return;
+      const val = chart.data.datasets[0].data[idx];
+      const xp  = pt.x;
+      const yp  = y.getPixelForValue(val);
+      // dot
+      ctx.beginPath();
+      ctx.arc(xp, yp, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = isHigh ? '#00d2ff' : '#00c877';
+      ctx.fill();
+      // label
+      ctx.font         = 'bold 9.5px Segoe UI';
+      ctx.fillStyle    = isHigh ? '#00d2ff' : '#00c877';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = isHigh ? 'bottom' : 'top';
+      ctx.fillText(val.toFixed(1), xp, yp + (isHigh ? -5 : 5));
+    });
+    ctx.restore();
+  }
+};
+
+// ── Render ────────────────────────────────────────────────────────
+let chartInst = null;
+
+function setDays(n, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render(n);
+}
+
+function render(numDays) {
+  const yData  = [];
+  const labels = [];
+  const peaks  = [];
+  const showTime = numDays <= 7;
+
+  for (let d = 0; d < numDays; d++) {
+    const flat = TODAY_FLAT + d;
+    const info = flatInfo(flat);
+    const hrs  = HOURLY[flat]; // exact hourly values from table
+
+    if (!hrs) break; // no data beyond Jun 13 for now
+
+    // find peak (high) and trough (low) indices within this day
+    let hiIdx = 0, loIdx = 0;
+    for (let h = 1; h < 24; h++) {
+      if (hrs[h] > hrs[hiIdx]) hiIdx = h;
+      if (hrs[h] < hrs[loIdx]) loIdx = h;
+    }
+    peaks.push({ idx: d * 24 + hiIdx, isHigh: true  });
+    peaks.push({ idx: d * 24 + loIdx, isHigh: false });
+
+    hrs.forEach((v, h) => {
+      yData.push(v);
+      if (h === 0) {
+        labels.push([info.dow + '.', info.label]);
+      } else if (showTime && (h === 6 || h === 12 || h === 18)) {
+        labels.push(`${String(h).padStart(2,'0')}:00`);
+      } else {
+        labels.push('');
+      }
+    });
+  }
+
+  const totalPts = yData.length;
+
+  // Gradient fill
+  function makeGrad(context) {
+    const { ctx, chartArea } = context.chart;
+    if (!chartArea) return 'rgba(0,150,200,0.2)';
+    const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    g.addColorStop(0,   'rgba(0,180,240,0.40)');
+    g.addColorStop(0.65,'rgba(0,180,240,0.07)');
+    g.addColorStop(1,   'rgba(0,180,240,0.01)');
+    return g;
+  }
+
+  if (chartInst) chartInst.destroy();
+
+  const ctx = document.getElementById('chart').getContext('2d');
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    plugins: [daySepPlugin, peakPlugin],
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'ระดับน้ำ (ม.)',
+          data: yData,
+          borderColor: 'rgba(0,210,255,0.9)',
+          borderWidth: 2,
+          backgroundColor: makeGrad,
+          fill: 'origin',
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: '#fff',
+        },
+        {
+          label: 'วิกฤต 2.5 ม.',
+          data: new Array(totalPts).fill(2.5),
+          borderColor: 'rgba(255,55,55,0.55)',
+          borderWidth: 1.5,
+          borderDash: [6, 5],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: window.innerWidth < 500
+        ? Math.max(1.2, numDays * 0.22)
+        : Math.max(2.0, numDays * 0.24),
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: { color: '#555', font: { size: 10 }, boxWidth: 18, padding: 10 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(5,5,10,0.95)',
+          titleColor: '#00d2ff',
+          bodyColor: '#bbb',
+          borderColor: '#1e1e1e',
+          borderWidth: 1,
+          padding: 9,
+          callbacks: {
+            title: items => {
+              const idx  = items[0].dataIndex;
+              const d    = Math.floor(idx / 24);
+              const h    = idx % 24;
+              const info = flatInfo(TODAY_FLAT + d);
+              return `${info.dow}. ${info.label}  ${String(h).padStart(2,'0')}:00 น.`;
+            },
+            label: item => {
+              if (item.datasetIndex !== 0) return null;
+              const v    = item.parsed.y;
+              const warn = v >= 2.5 ? ' ⚠️ เฝ้าระวัง'
+                         : v >= 2.2 ? ' ⚡ ค่อนข้างสูง'
+                         : v <= 0.6 ? ' 🔵 น้ำลงต่ำ'
+                         : ' ✅ ปกติ';
+              return ` ระดับน้ำ: ${v.toFixed(2)} ม.${warn}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false,
+            maxRotation: 0,
+            color: ctx => Array.isArray(labels[ctx.index]) ? '#ccc' : '#3a3a3a',
+            font:  ctx => Array.isArray(labels[ctx.index])
+              ? { size: 10, weight: '600' }
+              : { size:  9, weight: '400' },
+            callback: (_, idx) => labels[idx] ?? '',
+          },
+          grid: { color: 'rgba(255,255,255,0.025)' }
+        },
+        y: {
+          min: 0,
+          max: 3.0,
+          ticks: {
+            color: '#555',
+            font: { size: 10 },
+            stepSize: 0.5,
+            callback: v => `${v.toFixed(1)} ม.`,
+          },
+          grid: {
+            color: ctx => ctx.tick.value === 2.5
+              ? 'rgba(255,55,55,0.2)'
+              : 'rgba(255,255,255,0.05)',
+          }
+        }
+      }
+    }
+  });
+
+  chartInst._numDays = numDays;
+  chartInst._peaks   = peaks;
+}
+
+render(5);
+</script>
+</body>
+</html>
