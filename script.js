@@ -148,10 +148,10 @@ const pages = {
 let radarRefreshTimer = null;
 
 const RADAR_STATIONS = {
-    'ryg':   { s: 'https://semet.uk/latest/RYGLatest.jpg',               l: 'https://semet.uk/loop/RYGLoop.gif',              c: '' },
-    'ryg-e': { s: 'https://weather.tmd.go.th/ryg/ryg240_HQ_latest.gif',  l: 'https://weather.tmd.go.th/ryg/ryg240LoopHQ.gif', c: 'focus-east' },
-    'svp':   { s: 'https://weather.tmd.go.th/svp/svp240_HQ_latest.gif',  l: 'https://weather.tmd.go.th/svp/svp240LoopHQ.gif', c: '' },
-    'skm':   { s: 'https://weather.tmd.go.th/skm/skm240_HQ_latest.gif',  l: 'https://weather.tmd.go.th/skm/skm240LoopHQ.gif', c: '' },
+    'ryg':   { lat: 12.68, lon: 101.28, zoom: 9 },
+    'ryg-e': { lat: 13.20, lon: 101.00, zoom: 7 },
+    'svp':   { lat: 13.75, lon: 100.75, zoom: 8 },
+    'skm':   { lat: 13.42, lon:  99.90, zoom: 8 },
 };
 
 window.switchRadar = (station, btn) => {
@@ -162,35 +162,19 @@ window.switchRadar = (station, btn) => {
     const display = document.getElementById('radar-display');
     if (!display) return;
 
-    const data = RADAR_STATIONS[station] || RADAR_STATIONS['ryg'];
-    const ts   = Date.now();
+    const { lat, lon, zoom } = RADAR_STATIONS[station] || RADAR_STATIONS['ryg'];
+    const src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=${zoom}&level=surface&overlay=radar&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=${lat}&detailLon=${lon}&metricWind=default&metricTemp=default&radarRange=-1`;
 
     display.innerHTML = `
-        <div class="radar-grid">
-            <div class="radar-zoom-wrap ${data.c}">
-                <img src="${data.s}?t=${ts}" alt="เรดาร์ภาพนิ่ง" loading="lazy">
-            </div>
-            <div class="radar-zoom-wrap ${data.c}">
-                <img src="${data.l}?t=${ts}" alt="เรดาร์ภาพเคลื่อนไหว" loading="lazy">
-            </div>
+        <div style="position:relative;width:100%;padding-top:62%;border-radius:8px;overflow:hidden;">
+            <iframe src="${src}"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+                allowfullscreen loading="lazy">
+            </iframe>
         </div>
-        <p class="radar-note">อัปเดตทุก 5 นาที — คลิกรูปเพื่อขยาย</p>`;
-
-    display.querySelectorAll('img').forEach(img => {
-        img.style.cursor = 'zoom-in';
-        img.addEventListener('click', () => window.open(img.src.split('?')[0], '_blank'));
-    });
+        <p class="radar-note">แหล่งข้อมูล: Windy.com — อัปเดตอัตโนมัติ · คลิกแผนที่เพื่อดูรายละเอียด</p>`;
 
     clearInterval(radarRefreshTimer);
-    radarRefreshTimer = setInterval(() => {
-        const activeBtn = document.querySelector('.radar-btn.active');
-        if (activeBtn) {
-            const activeStation = activeBtn.textContent === 'ระยอง' ? 'ryg'
-                : activeBtn.textContent === 'ภาคตะวันออก' ? 'ryg-e'
-                : activeBtn.textContent === 'สุวรรณภูมิ'   ? 'svp'  : 'skm';
-            switchRadar(activeStation, null);
-        }
-    }, CONFIG.RADAR_AUTO_REFRESH_MS);
 };
 
 window.refreshWaterIframe = () => {
