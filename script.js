@@ -47,10 +47,12 @@ const pages = {
         content: `
             <div class="card">
                 <div class="radar-toolbar">
-                    <button class="radar-btn active" onclick="switchRadar('ryg',this)">ระยอง</button>
-                    <button class="radar-btn" onclick="switchRadar('ryg-e',this)">ภาคตะวันออก</button>
-                    <button class="radar-btn" onclick="switchRadar('svp',this)">สุวรรณภูมิ</button>
-                    <button class="radar-btn" onclick="switchRadar('skm',this)">สมุทรสงคราม</button>
+                    <button class="radar-btn active" data-station="ryg"   onclick="switchRadar('ryg',this)">ระยอง</button>
+                    <button class="radar-btn"         data-station="ryg-e" onclick="switchRadar('ryg-e',this)">ภาคตะวันออก</button>
+                    <button class="radar-btn"         data-station="svp"   onclick="switchRadar('svp',this)">สุวรรณภูมิ</button>
+                    <button class="radar-btn"         data-station="skm"   onclick="switchRadar('skm',this)">สมุทรสงคราม</button>
+                    <button class="radar-btn"         data-station="kkw"   onclick="switchRadar('kkw',this)">นครนายก</button>
+                    <button class="radar-btn"         data-station="windy" onclick="switchRadar('windy',this)">🌐 Windy</button>
                 </div>
                 <div id="radar-display" style="margin-top:20px;"></div>
             </div>`
@@ -148,11 +150,14 @@ const pages = {
 let radarRefreshTimer = null;
 
 const RADAR_STATIONS = {
-    'ryg':   { lat: 12.68, lon: 101.28, zoom: 9 },
-    'ryg-e': { lat: 13.20, lon: 101.00, zoom: 7 },
-    'svp':   { lat: 13.75, lon: 100.75, zoom: 8 },
-    'skm':   { lat: 13.42, lon:  99.90, zoom: 8 },
+    'ryg':   { s: 'https://semet.uk/latest/RYGLatest.jpg',                l: 'https://semet.uk/loop/RYGLoop.gif',                c: '' },
+    'ryg-e': { s: 'https://weather.tmd.go.th/ryg/ryg240_latest.jpg',      l: 'https://weather.tmd.go.th/ryg/rygloop.gif',        c: '' },
+    'svp':   { s: 'https://weather.tmd.go.th/svp/svp240_latest.jpg',      l: 'https://weather.tmd.go.th/svp/svploop.gif',        c: '' },
+    'skm':   { s: 'https://weather.tmd.go.th/skm/skm240_latest.jpg',      l: 'https://weather.tmd.go.th/skm/skmloop.gif',        c: 'focus-skm' },
+    'kkw':   { s: 'https://weather.tmd.go.th/kkw/kkw240_latest.jpg',      l: 'https://weather.tmd.go.th/kkw/kkwLoop.gif',        c: '' },
 };
+
+const WINDY_SRC = 'https://embed.windy.com/embed2.html?lat=12.68&lon=101.28&zoom=8&level=surface&overlay=radar&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=12.68&detailLon=101.28&metricWind=default&metricTemp=default&radarRange=-1';
 
 window.switchRadar = (station, btn) => {
     if (btn) {
@@ -162,19 +167,46 @@ window.switchRadar = (station, btn) => {
     const display = document.getElementById('radar-display');
     if (!display) return;
 
-    const { lat, lon, zoom } = RADAR_STATIONS[station] || RADAR_STATIONS['ryg'];
-    const src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=${zoom}&level=surface&overlay=radar&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=${lat}&detailLon=${lon}&metricWind=default&metricTemp=default&radarRange=-1`;
+    clearInterval(radarRefreshTimer);
+
+    if (station === 'windy') {
+        display.innerHTML = `
+            <div style="position:relative;width:100%;padding-top:62%;border-radius:8px;overflow:hidden;">
+                <iframe src="${WINDY_SRC}"
+                    style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+                    allowfullscreen loading="lazy"></iframe>
+            </div>
+            <p class="radar-note">แหล่งข้อมูล: Windy.com — Interactive · อัปเดตอัตโนมัติ</p>`;
+        return;
+    }
+
+    const data = RADAR_STATIONS[station] || RADAR_STATIONS['ryg'];
+    const ts   = Date.now();
 
     display.innerHTML = `
-        <div style="position:relative;width:100%;padding-top:62%;border-radius:8px;overflow:hidden;">
-            <iframe src="${src}"
-                style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
-                allowfullscreen loading="lazy">
-            </iframe>
+        <div class="radar-grid">
+            <div class="radar-zoom-wrap ${data.c}">
+                <img src="${data.s}?t=${ts}" alt="เรดาร์ภาพนิ่ง" loading="lazy"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="radar-error" style="display:none;">⚠️ โหลดภาพไม่ได้</div>
+            </div>
+            <div class="radar-zoom-wrap ${data.c}">
+                <img src="${data.l}?t=${ts}" alt="เรดาร์ภาพเคลื่อนไหว" loading="lazy"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="radar-error" style="display:none;">⚠️ โหลดภาพไม่ได้</div>
+            </div>
         </div>
-        <p class="radar-note">แหล่งข้อมูล: Windy.com — อัปเดตอัตโนมัติ · คลิกแผนที่เพื่อดูรายละเอียด</p>`;
+        <p class="radar-note">อัปเดตทุก 5 นาที — คลิกรูปเพื่อขยาย</p>`;
 
-    clearInterval(radarRefreshTimer);
+    display.querySelectorAll('img').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.addEventListener('click', () => window.open(img.src.split('?')[0], '_blank'));
+    });
+
+    radarRefreshTimer = setInterval(() => {
+        const activeBtn = document.querySelector('.radar-btn.active');
+        if (activeBtn) switchRadar(activeBtn.dataset.station || station, null);
+    }, CONFIG.RADAR_AUTO_REFRESH_MS);
 };
 
 window.refreshWaterIframe = () => {
@@ -571,7 +603,7 @@ function updateTimestamp() {
     const el = document.getElementById('ticker-timestamp');
     if (!el) return;
     const now = new Date();
-    el.textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    el.textContent = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     el.title = `อัปเดตล่าสุด ${now.toLocaleString('th-TH')}`;
 }
 
@@ -638,6 +670,7 @@ async function fetchAndUpdateTicker() {
 window.addEventListener('load', calibrateTickerSpeed);
 fetchAndUpdateTicker();
 setInterval(fetchAndUpdateTicker, CONFIG.TICKER_REFRESH_MS);
+setInterval(updateTimestamp, 1000);
 
 // ============================================================
 // 9. Dashboard Button Listener

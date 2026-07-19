@@ -241,6 +241,9 @@ iframe {
 .radar-zoom-wrap:hover img { transform: scale(1.04); }
 .focus-east img        { transform: scale(1.4) translateY(-8%); transform-origin: center 40%; }
 .focus-east:hover img  { transform: scale(1.44) translateY(-8%); }
+.focus-skm img         { transform: scale(1.1) translateX(6%); transform-origin: center center; }
+.focus-skm:hover img   { transform: scale(1.14) translateX(6%); }
+.radar-error { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#555; font-size:0.85rem; }
 
 .radar-btn {
     background: #1c1c1c; color: #ccc; border: 1px solid #3a3a3a;
