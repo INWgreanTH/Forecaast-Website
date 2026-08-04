@@ -243,6 +243,10 @@ iframe {
 .focus-east:hover img  { transform: scale(1.44) translateY(-8%); }
 .focus-skm img         { transform: scale(1.1) translateX(6%); transform-origin: center center; }
 .focus-skm:hover img   { transform: scale(1.14) translateX(6%); }
+.focus-rye img         { object-fit: cover; transform: scale(1.3) translateX(4%) translateY(-10%); transform-origin: center center; }
+.focus-rye:hover img   { object-fit: cover; transform: scale(1.35) translateX(4%) translateY(-10%); transform-origin: center center; }
+.focus-skm2 img        { object-fit: cover; transform: scale(1.35) translateX(-12%) translateY(-8%); transform-origin: center center; }
+.focus-skm2:hover img  { object-fit: cover; transform: scale(1.4) translateX(-12%) translateY(-8%); transform-origin: center center; }
 .radar-error { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#555; font-size:0.85rem; }
 
 .radar-btn {

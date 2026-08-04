@@ -51,8 +51,8 @@ const pages = {
                     <button class="radar-btn"         data-station="ryg-e" onclick="switchRadar('ryg-e',this)">ภาคตะวันออก</button>
                     <button class="radar-btn"         data-station="svp"   onclick="switchRadar('svp',this)">สุวรรณภูมิ</button>
                     <button class="radar-btn"         data-station="skm"   onclick="switchRadar('skm',this)">สมุทรสงคราม</button>
-                    <button class="radar-btn"         data-station="kkw"   onclick="switchRadar('kkw',this)">นครนายก</button>
-                    <button class="radar-btn"         data-station="windy" onclick="switchRadar('windy',this)">🌐 Windy</button>
+                    <button class="radar-btn"         data-station="kkw"         onclick="switchRadar('kkw',this)">นครนายก</button>
+                    <button class="radar-btn"         data-station="satellite"   onclick="switchRadar('satellite',this)">🛰️ ดาวเทียม</button>
                 </div>
                 <div id="radar-display" style="margin-top:20px;"></div>
             </div>`
@@ -151,13 +151,13 @@ let radarRefreshTimer = null;
 
 const RADAR_STATIONS = {
     'ryg':   { s: 'https://semet.uk/latest/RYGLatest.jpg',                l: 'https://semet.uk/loop/RYGLoop.gif',                c: '' },
-    'ryg-e': { s: 'https://weather.tmd.go.th/ryg/ryg240_latest.jpg',      l: 'https://weather.tmd.go.th/ryg/rygloop.gif',        c: '' },
+    'ryg-e': { s: 'https://weather.tmd.go.th/ryg/ryg240_latest.jpg',      l: 'https://weather.tmd.go.th/ryg/rygloop.gif',        c: 'focus-rye' },
     'svp':   { s: 'https://weather.tmd.go.th/svp/svp240_latest.jpg',      l: 'https://weather.tmd.go.th/svp/svploop.gif',        c: '' },
-    'skm':   { s: 'https://weather.tmd.go.th/skm/skm240_latest.jpg',      l: 'https://weather.tmd.go.th/skm/skmloop.gif',        c: 'focus-skm' },
+    'skm':   { s: 'https://weather.tmd.go.th/skm/skm240_latest.jpg',      l: 'https://weather.tmd.go.th/skm/skmloop.gif',        c: 'focus-skm2' },
     'kkw':   { s: 'https://weather.tmd.go.th/kkw/kkw240_latest.jpg',      l: 'https://weather.tmd.go.th/kkw/kkwLoop.gif',        c: '' },
 };
 
-const WINDY_SRC = 'https://embed.windy.com/embed2.html?lat=12.68&lon=101.28&zoom=8&level=surface&overlay=radar&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=12.68&detailLon=101.28&metricWind=default&metricTemp=default&radarRange=-1';
+const SATELLITE_SRC  = 'https://embed.windy.com/embed2.html?lat=13.0&lon=101.0&zoom=7&level=surface&overlay=satellite&menu=&message=true&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&detailLat=13.0&detailLon=101.0&metricWind=default&metricTemp=default&radarRange=-1';
 
 window.switchRadar = (station, btn) => {
     if (btn) {
@@ -169,16 +169,17 @@ window.switchRadar = (station, btn) => {
 
     clearInterval(radarRefreshTimer);
 
-    if (station === 'windy') {
+    if (station === 'satellite') {
         display.innerHTML = `
             <div style="position:relative;width:100%;padding-top:62%;border-radius:8px;overflow:hidden;">
-                <iframe src="${WINDY_SRC}"
+                <iframe src="${SATELLITE_SRC}"
                     style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
                     allowfullscreen loading="lazy"></iframe>
             </div>
-            <p class="radar-note">แหล่งข้อมูล: Windy.com — Interactive · อัปเดตอัตโนมัติ</p>`;
+            <p class="radar-note">แหล่งข้อมูล: Windy.com — ภาพถ่ายดาวเทียม · อัปเดตอัตโนมัติ</p>`;
         return;
     }
+
 
     const data = RADAR_STATIONS[station] || RADAR_STATIONS['ryg'];
     const ts   = Date.now();
